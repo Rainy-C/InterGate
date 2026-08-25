@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" id="metaTheme" content="#0b0f1a">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="InterGate">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234f7cff'/%3E%3Cstop offset='1' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-size='28' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'%3EIG%3C/text%3E%3C/svg%3E">
+<title>InterGate · AI 网关控制台</title>
+<style>
+:root{
+  /* 深色(默认) */
+  --bg:#0b0f1a; --panel:#121829; --panel2:#0f1524; --border:#1e2a45;
+  --text:#e6ecff; --muted:#8a97b8; --accent:#4f7cff; --accent2:#8b5cf6;
+  --green:#34d399; --red:#f87171; --yellow:#fbbf24; --orange:#fb923c;
+  --row-border:#182338; --row-hover:#141c33; --chip:#1c2a4a;
+  --chip-green:#0f2e24; --chip-red:#331b1b; --chip-yellow:#332a10; --chip-gray:#1c2233;
+  --badge-bg:#13203a; --switch-off:#2a3554; --switch-knob:#cbd5f5;
+  --danger-border:#3a2430; --accent-soft:rgba(79,124,255,.08);
+  --toast-bg:#1c2a4a; --overlay:rgba(0,0,0,.6);
+  --shadow:0 8px 24px rgba(0,0,0,.4);
+  --radius:12px;
+}
+/* 浅色(跟随系统时自动) */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme]){
+    --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f8; --border:#dfe5f0;
+    --text:#1c2438; --muted:#64748b; --accent:#3b6cf6; --accent2:#7c5cf6;
+    --green:#10b981; --red:#ef4444; --yellow:#d97706; --orange:#ea580c;
+    --row-border:#e5eaf3; --row-hover:#eef2fa; --chip:#e4e9f4;
+    --chip-green:#d1fae5; --chip-red:#fee2e2; --chip-yellow:#fef3c7; --chip-gray:#e2e8f0;
+    --badge-bg:#e8edf8; --switch-off:#cbd5e1; --switch-knob:#ffffff;
+    --danger-border:#fecaca; --accent-soft:rgba(59,108,246,.1);
+    --toast-bg:#ffffff; --overlay:rgba(15,23,42,.45);
+    --shadow:0 8px 24px rgba(15,23,42,.12);
+  }
+}
+/* 浅色(手动选择) */
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f8; --border:#dfe5f0;
+  --text:#1c2438; --muted:#64748b; --accent:#3b6cf6; --accent2:#7c5cf6;
+  --green:#10b981; --red:#ef4444; --yellow:#d97706; --orange:#ea580c;
+  --row-border:#e5eaf3; --row-hover:#eef2fa; --chip:#e4e9f4;
+  --chip-green:#d1fae5; --chip-red:#fee2e2; --chip-yellow:#fef3c7; --chip-gray:#e2e8f0;
+  --badge-bg:#e8edf8; --switch-off:#cbd5e1; --switch-knob:#ffffff;
+  --danger-border:#fecaca; --accent-soft:rgba(59,108,246,.1);
+  --toast-bg:#ffffff; --overlay:rgba(15,23,42,.45);
+  --shadow:0 8px 24px rgba(15,23,42,.12);
+}
+/* 深色(手动选择) */
+:root[data-theme="dark"]{
+  --bg:#0b0f1a; --panel:#121829; --panel2:#0f1524; --border:#1e2a45;
+  --text:#e6ecff; --muted:#8a97b8; --accent:#4f7cff; --accent2:#8b5cf6;
+  --green:#34d399; --red:#f87171; --yellow:#fbbf24; --orange:#fb923c;
+  --row-border:#182338; --row-hover:#141c33; --chip:#1c2a4a;
+  --chip-green:#0f2e24; --chip-red:#331b1b; --chip-yellow:#332a10; --chip-gray:#1c2233;
+  --badge-bg:#13203a; --switch-off:#2a3554; --switch-knob:#cbd5f5;
+  --danger-border:#3a2430; --accent-soft:rgba(79,124,255,.08);
+  --toast-bg:#1c2a4a; --overlay:rgba(0,0,0,.6);
+  --shadow:0 8px 24px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Noto Sans CJK SC",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+a{color:var(--accent);text-decoration:none}
+.topbar{display:flex;align-items:center;gap:14px;padding:12px 22px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.logo .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;background:var(--badge-bg);border:1px solid var(--border)}
+.badge .led{width:8px;height:8px;border-radius:50%}
+.led{width:10px;height:10px;border-radius:50%;display:inline-block}
+.badge.on .led{background:var(--green);box-shadow:0 0 8px var(--green)}
+.badge.off .led{background:var(--red);box-shadow:0 0 8px var(--red)}
+.spacer{flex:1}
+.ops{display:flex;gap:5px;flex-wrap:wrap}
+.switch-label{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer}
+/* 模型分组 */
+.gh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gh .tag{font-size:12px}
+.gh .cnt{color:var(--muted);font-size:12px}
+.gh .btns{margin-left:auto;display:flex;gap:6px}
+.group-head td{background:var(--panel2);padding:8px 10px;border-bottom:1px solid var(--border)}
+.group-head + tr td{border-top:none}
+.mc-group{display:flex;flex-direction:column;gap:6px}
+.mc-group .gh{padding:4px 2px}
+/* switch 开关(紧凑) */
+.switch{position:relative;width:38px;height:22px;border-radius:11px;background:var(--switch-off);border:1px solid var(--border);cursor:pointer;transition:.18s;flex-shrink:0;padding:0}
+.switch.on{background:var(--accent);border-color:var(--accent)}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--switch-knob);transition:.18s}
+.switch.on::after{left:18px;background:#fff}
+.switch:active::after{width:20px}
+/* 模型紧凑卡片(移动端) */
+.model-card{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.model-card code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;transition:.15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.danger{color:var(--red);border-color:var(--danger-border)}
+.btn.sm{padding:4px 9px;font-size:12px}
+nav{display:flex;gap:4px;background:var(--panel);border-bottom:1px solid var(--border);padding:0 22px;overflow-x:auto}
+nav button{background:none;border:none;color:var(--muted);padding:12px 16px;cursor:pointer;font-size:14px;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.active{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+main{padding:22px;max-width:1200px;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+h2{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.stat .label{color:var(--muted);font-size:12px}
+.stat .value{font-size:26px;font-weight:700;margin-top:6px}
+.stat .sub{color:var(--muted);font-size:12px;margin-top:4px}
+table{width:100%;border-collapse:collapse}
+th{color:var(--muted);text-align:left;font-weight:500;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--border)}
+td{padding:9px 10px;border-bottom:1px solid var(--row-border);font-size:13px}
+tr:hover td{background:var(--row-hover)}
+tr.clickable{cursor:pointer}
+.mc-card.clickable{cursor:pointer}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:var(--chip);color:var(--accent)}
+.tag.green{background:var(--chip-green);color:var(--green)}
+.tag.red{background:var(--chip-red);color:var(--red)}
+.tag.yellow{background:var(--chip-yellow);color:var(--yellow)}
+.tag.gray{background:var(--chip-gray);color:var(--muted)}
+input,select,textarea{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.mt{margin-top:14px}
+.mb{margin-bottom:12px}
+.modal{position:fixed;inset:0;background:var(--overlay);display:none;align-items:center;justify-content:center;z-index:100}
+.modal.open{display:flex}
+/* 嵌套弹窗(如从 keyModal 打开的提供商选择)置于其它弹窗之上 */
+.modal.front{z-index:120}
+.modal .box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(560px,92vw);max-height:88vh;overflow:auto}
+/* 选择器按钮 */
+.picker-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:13px;width:100%;cursor:pointer;transition:.15s}
+.picker-btn:hover{border-color:var(--accent)}
+.picker-btn .chev{width:16px;height:16px;color:var(--muted);flex-shrink:0}
+/* 底部弹窗(sheet)通用 */
+.modal.sheet{align-items:flex-end}
+.modal.sheet .box{width:min(680px,100vw);max-height:80vh;border-radius:16px 16px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.sheet-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sheet-title span{font-size:16px;font-weight:700}
+.sheet-list{display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.sheet-item{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.15s;text-align:left;width:100%}
+.sheet-item:hover{border-color:var(--accent)}
+.sheet-item.sel{border-color:var(--accent);background:var(--accent-soft)}
+.sheet-item .si-name{flex:1;font-size:14px}
+.sheet-item .si-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.sheet-item .si-check{color:var(--accent);flex-shrink:0}
+/* 日志详情 */
+.dl{display:flex;flex-direction:column}
+.dl .item{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--row-border);font-size:13px;align-items:flex-start}
+.dl .item:last-child{border-bottom:none}
+.dl .k{width:88px;flex-shrink:0;color:var(--muted);font-size:12px;padding-top:1px}
+.dl .v{flex:1;min-width:0;word-break:break-all;font-size:13px}
+.dl .v.err{color:var(--red)}
+.dl .row2{display:flex;gap:14px;flex-wrap:wrap}
+@media (max-width:768px){.dl .k{width:76px}}
+/* 密钥显示/隐藏开关 */
+.pwd-wrap{position:relative}
+.pwd-wrap input{padding-right:48px}
+.pwd-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--panel2);border:1px solid var(--border);color:var(--muted);cursor:pointer;padding:6px 8px;display:flex;align-items:center;justify-content:center;border-radius:8px;line-height:0;transition:.15s}
+.pwd-eye:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.pwd-eye:active{transform:translateY(-50%) scale(.94)}
+.pwd-eye svg{width:18px;height:18px;stroke:currentColor}
+@media (max-width:768px){.pwd-eye{padding:8px 10px}.pwd-eye svg{width:20px;height:20px}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--toast-bg);border:1px solid var(--border);padding:10px 18px;border-radius:10px;font-size:13px;z-index:200;display:none;box-shadow:var(--shadow)}
+.toast.show{display:block}
+.progress{width:70px;height:5px;border-radius:3px;background:var(--chip);overflow:hidden}
+.progress i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.login-overlay{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:flex-end;justify-content:center;z-index:300}
+.login-box{background:var(--panel);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:28px 24px calc(24px + env(safe-area-inset-bottom));width:min(680px,100vw)}
+.login-box h1{font-size:20px;margin-bottom:4px}
+.empty{color:var(--muted);text-align:center;padding:30px}
+.chart-bar{display:flex;flex-direction:column;gap:8px}
+.chart-row{display:flex;align-items:center;gap:10px}
+.chart-row .name{width:90px;font-size:12px;color:var(--muted);text-align:right}
+.chart-row .pname{display:flex;align-items:center;gap:8px;width:170px;font-size:12px;color:var(--muted);text-align:left}
+.chart-row .pname .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chart-row .pname .sub{flex:none;font-size:11px;color:var(--muted)}
+.chart-row .bar{flex:1;background:var(--chip);border-radius:4px;height:14px;overflow:hidden}
+.chart-row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px}
+.chart-row .val{width:70px;font-size:12px}
+code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
+/* 表格横滚容器(桌面/大屏) */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius)}
+.table-wrap table{min-width:760px}
+/* ===== 全局过渡动画 ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetUp{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+.page.active{animation:fadeUp .28s ease}
+.modal.open{animation:fadeIn .18s ease}
+.modal.open .box{animation:sheetUp .26s cubic-bezier(.2,.9,.3,1)}
+.toast.show{animation:toastIn .24s ease}
+.anim-fade{animation:fadeIn .3s ease}
+.btn{transition:.15s}
+.btn:active{transform:scale(.96)}
+.sheet-item:active{transform:scale(.985)}
+.switch:active::after{width:20px}
+/* 移动端卡片列表(桌面隐藏, 手机显示) */
+.mobile-cards{display:none}
+.mc-card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px}
+.mc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:8px;font-size:13px}
+.mc-label{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.mc-quota{margin-top:10px;font-size:12px}
+.mc-ops{display:flex;gap:8px;margin-top:10px}
+.mc-ops .btn{flex:1;min-height:40px;white-space:nowrap}
+/* 使用方式地址卡片 */
+.addr-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.addr-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.addr-tag{flex-shrink:0;font-size:11px;color:var(--muted);background:var(--chip);padding:2px 8px;border-radius:10px}
+.addr-code{flex:0 1 auto;min-width:0;font-size:12px;white-space:nowrap;cursor:pointer;user-select:all}
+.addr-row .btn{flex-shrink:0}
+/* ========== Android 移动端适配 (≤768px) ========== */
+@media (max-width:768px){
+  body{font-size:13px}
+  .topbar{padding:10px 12px;gap:8px}
+  .logo{font-size:15px}
+  .logo .dot{width:22px;height:22px;font-size:12px}
+  .topbar .btn{padding:7px 10px;min-height:40px}
+  /* 顶栏精简: 开关/同步已移入内容区 */
+  #toggleGw,#syncBtn{display:none}
+  /* 底部固定导航 */
+  nav{position:fixed;bottom:0;left:0;right:0;top:auto;padding:0;
+      border-top:1px solid var(--border);border-bottom:none;overflow-x:visible;
+      z-index:90;padding-bottom:env(safe-area-inset-bottom);
+      background:var(--panel)}
+  nav button{flex:1;display:flex;align-items:center;justify-content:center;
+             padding:4px 2px;font-size:13px;min-height:56px;
+             border-bottom:none;border-top:2px solid transparent;color:var(--muted)}
+  nav button.active{color:var(--text);border-bottom:none;border-top-color:var(--accent);font-weight:600}
+  main{padding:12px;padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .card{padding:14px;margin-bottom:12px}
+  .cards{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat{padding:12px}
+  .stat .value{font-size:20px}
+  .grid2,.grid3{grid-template-columns:1fr;gap:0}
+  h2{font-size:16px}
+  /* 模态框→底部抽屉 */
+  .modal{align-items:flex-end}
+  .modal .box{width:100%;max-height:88vh;border-radius:16px 16px 0 0;
+              padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom));max-width:86vw;text-align:center}
+  .login-box{padding:24px 18px calc(24px + env(safe-area-inset-bottom))}
+  .chart-row .name{width:64px;font-size:11px}
+  .chart-row .pname{width:130px}
+  .chart-row .val{width:56px;font-size:11px}
+  td{padding:8px 8px}
+  .row.gap-sm{gap:4px}
+  /* 表格操作按钮纵向堆叠 */
+  .ops{display:flex;flex-direction:column;gap:4px}
+  .ops .btn{width:100%;text-align:center}
+  /* 触摸目标 ≥40px */
+  .btn{padding:9px 12px;min-height:42px}
+  .btn.sm{padding:7px 10px;min-height:38px}
+  /* 输入框 16px 防聚焦缩放 */
+  input,select,textarea{font-size:16px}
+  /* 表格→卡片列表 */
+  .table-wrap{display:none}
+  .mobile-cards{display:flex;flex-direction:column;gap:10px}
+  /* 日志过滤行 */
+  .filter-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
+  .filter-row input{width:100%!important}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="dot">IG</div>InterGate</div>
+  <div id="gwBadge" class="badge off"><span class="led"></span><span id="gwBadgeText">检测中...</span></div>
+  <div class="spacer"></div>
+  <button id="toggleGw" class="btn sm">暂停网关</button>
+  <button id="syncBtn" class="btn sm">同步模型</button>
+  <button id="refreshBtn" class="btn sm">刷新</button>
+</div>
+<nav>
+  <button data-page="dash" class="active">仪表盘</button>
+  <button data-page="keys">Key 管理</button>
+  <button data-page="models">模型</button>
+  <button data-page="logs">请求日志</button>
+  <button data-page="settings">设置</button>
+</nav>
+
+<main>
+  <!-- 仪表盘 -->
+  <div id="page-dash" class="page active">
+    <div class="card" id="gwControlCard">
+      <div class="row">
+        <div class="gw-status">
+          <div class="label">网关状态</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700;margin-top:4px">
+            <span id="gwBigLed" class="led"></span><span id="gwBigText">检测中...</span>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button id="gwBigToggle" class="btn primary" style="min-height:44px;padding:0 20px">启动网关</button>
+      </div>
+      <div class="muted mt" style="font-size:12px">第三方应用 base_url(点击复制):</div>
+      <div id="gwAddrsMini" class="addr-list"></div>
+      <div id="gwKeyRow" class="addr-row" style="display:none;margin-top:8px">
+        <span class="addr-tag">网关Key</span>
+        <code class="addr-code" id="gwKeyCode" onclick="copyText(document.getElementById('gwKeyCode').textContent)" title="点击复制">-</code>
+        <button class="btn sm" id="gwKeyCopyBtn">复制</button>
+      </div>
+    </div>
+    <h2>运行总览</h2>
+    <div class="cards">
+      <div class="stat"><div class="label">今日请求</div><div class="value" id="stReq">-</div><div class="sub" id="stErr">-</div></div>
+      <div class="stat"><div class="label">今日 Token 用量</div><div class="value" id="stTok">-</div><div class="sub">prompt + completion</div></div>
+      <div class="stat"><div class="label">Key 数量</div><div class="value" id="stKey">-</div><div class="sub" id="stActiveKey">-</div></div>
+      <div class="stat"><div class="label">缓存命中率</div><div class="value" id="stCache">-</div><div class="sub" id="stModel">-</div></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:8px">价格预估</h2>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+        <div class="stat"><div class="label">近 7 日预估</div><div class="value" id="prTotal" style="font-size:24px">-</div><div class="sub">美元 · 按模型单价估算</div></div>
+        <div class="stat"><div class="label">今日预估</div><div class="value" id="prToday" style="font-size:24px">-</div><div class="sub">美元 · 仅供当日参考</div></div>
+      </div>
+      <div id="priceChart" class="chart-bar" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="row mb" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0">用量趋势</h2>
+        <span class="row" style="gap:6px">
+          <button class="btn sm trend-btn primary" data-days="7" onclick="loadTrend(7)">7日</button>
+          <button class="btn sm trend-btn" data-days="30" onclick="loadTrend(30)">30日</button>
+          <button class="btn sm trend-btn" data-days="90" onclick="loadTrend(90)">90日</button>
+        </span>
+      </div>
+      <div id="trendChart" class="chart-bar" style="padding-top:6px"><div class="empty" style="padding:14px">加载中...</div></div>
+      <div class="muted" style="font-size:11px;display:flex;justify-content:space-between;margin-top:4px">
+        <span><svg width="20" height="8" style="vertical-align:middle"><path d="M1 6 C4 1,8 1,11 4 S17 7,19 3" stroke="var(--accent)" stroke-width="2" fill="none"/></svg> 请求数</span>
+        <span><svg width="20" height="8" style="vertical-align:middle"><path d="M1 6 C4 1,8 1,11 4 S17 7,19 3" stroke="#f59e0b" stroke-width="2" fill="none" stroke-dasharray="4 3"/></svg> Token(万)</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:8px">最近告警</h2>
+      <div id="alertsBox"><div class="empty">暂无告警</div></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:8px">上游健康</h2>
+      <div class="row mb" style="justify-content:space-between">
+        <span class="muted" id="healthSummary" style="font-size:12px">点击右侧按钮探测各 Key 上游连通性</span>
+        <button class="btn sm" onclick="probeHealth()">探测</button>
+      </div>
+      <div id="healthList"><div class="empty">尚未探测</div></div>
+    </div>
+  </div>
+
+  <!-- Key 管理 -->
+  <div id="page-keys" class="page">
+    <div class="row mb">
+      <h2 style="margin:0">API Key 管理</h2>
+      <div class="spacer"></div>
+      <button class="btn sm" id="testAllBtn">批量测试</button>
+      <button class="btn primary" id="addKeyBtn">+ 添加 Key</button>
+    </div>
+    <div class="card" style="padding:8px">
+      <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>名称</th><th>提供商</th><th>Key</th><th>状态</th><th>优先级</th><th>权重</th>
+          <th>今日用量</th><th>配额</th><th>错误率</th><th>操作</th>
+        </tr></thead>
+        <tbody id="keysBody"></tbody>
+      </table>
+      </div>
+      <div class="mobile-cards" id="keysCards"></div>
+    </div>
+  </div>
+
+  <!-- 模型 -->
+  <div id="page-models" class="page">
+    <div class="row mb">
+      <h2 style="margin:0">模型列表 <span class="muted" id="modelInfo"></span></h2>
+      <div class="spacer"></div>
+      <button class="btn sm" id="syncBtn2">同步模型</button>
+    </div>
+    <div class="card" style="padding:8px">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>模型名称</th><th>能力</th><th>启用</th></tr></thead>
+        <tbody id="modelsBody"></tbody>
+      </table>
+      </div>
+      <div class="mobile-cards" id="modelsCards"></div>
+    </div>
+  </div>
+
+  <!-- 日志 -->
+  <div id="page-logs" class="page">
+    <div class="row" style="align-items:center">
+      <h2 style="margin:0">请求日志</h2>
+      <div class="spacer"></div>
+      <button class="btn sm danger" id="clearLogsBtn">清空日志</button>
+    </div>
+    <div class="row mb filter-row" style="margin-top:10px">
+      <input id="logProvider" placeholder="提供商" style="width:120px">
+      <input id="logStatus" placeholder="状态码" style="width:90px">
+      <input id="logModel" placeholder="模型关键词" style="width:130px">
+      <input id="logKey" placeholder="Key" style="width:110px">
+      <input id="logFrom" type="date" title="开始日期" style="width:140px">
+      <input id="logTo" type="date" title="结束日期" style="width:140px">
+      <button class="btn sm" id="logFilterBtn" style="white-space:nowrap">查询</button>
+    </div>
+    <div class="row mb" style="justify-content:space-between;align-items:center">
+      <span class="muted" id="logTotal" style="font-size:12px"></span>
+      <span class="row" style="gap:6px">
+        <button class="btn sm" id="logPrev" disabled>上一页</button>
+        <span class="muted" id="logPage" style="font-size:12px;white-space:nowrap">1/1</span>
+        <button class="btn sm" id="logNext" disabled>下一页</button>
+      </span>
+    </div>
+    <div class="card" style="padding:8px">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>时间</th><th>路径</th><th>状态</th><th>提供商</th><th>Key</th><th>模型</th><th>延迟</th><th>Tokens</th><th>缓存</th></tr></thead>
+        <tbody id="logsBody"></tbody>
+      </table>
+      </div>
+      <div class="mobile-cards" id="logsCards"></div>
+    </div>
+  </div>
+
+  <!-- 设置 -->
+  <div id="page-settings" class="page">
+    <h2>网关设置</h2>
+    <div class="card">
+      <div class="grid2">
+        <div><label>监听端口</label><input id="set-port" type="number"></div>
+        <div>
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>网关访问 Key</span>
+            <span class="switch-label"><button type="button" class="switch" id="gwKeySwitch" onclick="toggleGwKeyAuth()"></button>启用鉴权</span>
+          </label>
+          <input id="set-gatewayKey" placeholder="客户端需带 Authorization: Bearer &lt;key&gt;">
+          <div class="muted" style="font-size:11px;margin-top:3px" id="gwKeyHint">开启时网关要求 Bearer 密钥(仪表盘显示密钥); 关闭时无需 key 即可调用, Key 保留不清空</div>
+          <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border)">
+            <label style="display:flex;align-items:center;justify-content:space-between">
+              <span>附加网关密钥</span>
+              <button type="button" class="picker-btn" id="gwKeysBtn" onclick="openGwKeysModal()">
+                <span id="gwKeysBtnLabel">管理</span>
+                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </label>
+            <div class="muted" style="font-size:11px;margin-top:3px">可设权限: 全部 / 只读 / 限定模型; 修改后需保存设置生效</div>
+          </div>
+        </div>
+        <div>
+          <label>主题</label>
+          <button type="button" class="picker-btn" id="themeBtn2" onclick="openThemeModal()">
+            <span id="themeName">-</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <div>
+          <label>负载均衡策略</label>
+          <button type="button" class="picker-btn" id="strategyBtn" onclick="openStrategyModal()">
+            <span id="strategyName">-</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <div><label>日志保留天数</label><input id="set-logDays" type="number"></div>
+        <div>
+          <label>Worker 进程数</label>
+          <input id="set-workers" type="number" min="1" max="16" value="1">
+          <div class="muted" style="font-size:11px;margin-top:3px">>1 时启用多进程模式, 提升并发吞吐(需重启生效)</div>
+        </div>
+        <div>
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>模型自动同步</span>
+            <span class="switch-label"><button type="button" class="switch" id="set-syncSwitch" onclick="toggleSyncSwitch()"></button>自动同步</span>
+          </label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input id="set-syncInterval" type="number" min="1" style="flex:1" title="同步间隔(分钟)">
+            <span class="muted" style="font-size:12px;white-space:nowrap">分钟</span>
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:3px">开启后按间隔自动拉取各提供商模型列表; 关闭仅保留手动「同步模型」按钮</div>
+        </div>
+      </div>
+      <div class="grid3">
+        <div>
+          <label>缓存开关</label>
+          <button type="button" class="picker-btn" id="cacheBtn" onclick="openCacheModal()">
+            <span id="cacheName">-</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <div><label>缓存 TTL(秒)</label><input id="set-cacheTtl" type="number"></div>
+        <div><label>缓存条目上限</label><input id="set-cacheMax" type="number"></div>
+      </div>
+      <div class="grid3">
+        <div><label>IP 限流(次/分钟, 0=不限)</label><input id="set-ipRpm" type="number"></div>
+        <div><label>全局限流(次/分钟, 0=不限)</label><input id="set-globalRpm" type="number"></div>
+        <div>
+          <label>自适应 TPM</label>
+          <button type="button" class="picker-btn" id="tpmBtn" onclick="openTpmModal()">
+            <span id="tpmName">-</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div><label>管理台密码(留空=局域网免密)</label><input id="set-webPwd" type="password"></div>
+        <div><label>额度预警阈值</label><input id="set-quotaWarn" type="number" step="0.05"></div>
+      </div>
+      <div class="grid2">
+        <div><label>上游最大连接数(每提供商)</label><input id="set-upstreamMaxConn" type="number" min="1" value="100"></div>
+        <div><label>上游保持连接数(每提供商)</label><input id="set-upstreamKeepalive" type="number" min="0" value="20"></div>
+      </div>
+      <div class="row mt">
+        <button class="btn primary" id="saveSettings">保存设置</button>
+        <span class="muted" id="setSaveMsg"></span>
+      </div>
+      <div id="restartHint" style="display:none;margin-top:10px;padding:12px;border:1px solid var(--yellow);border-radius:10px;background:var(--chip-yellow)">
+        <div class="row" style="align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="flex:1;font-size:13px;color:var(--text)">⚠ 以下设置已修改,需重启服务才能生效:</span>
+          <button class="btn sm primary" id="restartBtn">立即重启</button>
+          <button class="btn sm" id="dismissRestart">稍后</button>
+        </div>
+        <div id="restartFields" class="muted" style="font-size:11px;margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:6px">价格表(美元/百万 token)</h2>
+      <p class="muted mb" style="font-size:12px">按模型前缀匹配, 自定义规则优先于内置表; 用于仪表盘费用预估。格式: 前缀 / 输入价 / 输出价</p>
+      <div id="pricingList"></div>
+      <div class="row mt" style="gap:8px">
+        <input id="pricePrefix" placeholder="前缀(如 deepseek)" style="flex:1">
+        <input id="priceIn" type="number" step="0.01" placeholder="输入价" style="width:90px">
+        <input id="priceOut" type="number" step="0.01" placeholder="输出价" style="width:90px">
+        <button class="btn" onclick="addPriceRow()">添加</button>
+      </div>
+      <div class="row mt"><button class="btn primary" onclick="savePricing()">保存价格表</button><span class="muted" id="pricingMsg"></span></div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)">
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px">内置价格参考</span>
+          <button type="button" class="picker-btn" id="builtinPricingBtn" onclick="openBuiltinPricingModal()">
+            <span id="builtinPricingBtnLabel">查看</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </label>
+        <div class="muted" style="font-size:11px;margin-top:3px">主流国内外模型 · 美元/百万 token · 前缀匹配, 自定义规则优先</div>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--green);background:var(--chip-green)">
+      <h2 style="margin-bottom:6px;color:var(--green)">✓ 数据持久化保障</h2>
+      <p class="muted" style="font-size:12px;line-height:1.8">
+        • API Key: AES-256-GCM 加密存储, 重启不丢失<br>
+        • 告警记录: 持久化到 SQLite, 重启后恢复(最多 200 条)<br>
+        • 模型列表: 同步后缓存到数据库, 重启后立即可用(无需等待重新同步)<br>
+        • 模型开关/路由规则: 持久化, 重启不丢失<br>
+        • 缓存/限流计数器/延迟统计: 内存数据, 重启清空(设计如此, 不影响正确性)
+      </p>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:6px">数据备份 / 导出</h2>
+      <p class="muted mb" style="font-size:12px">备份包含数据库(Key 加密数据)与主密钥, 请妥善保存。日志与统计可导出 CSV。</p>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="makeBackup()">创建备份</button>
+        <button class="btn" onclick="exportCsv('logs')">导出日志 CSV</button>
+        <button class="btn" onclick="exportCsv('stats')">导出统计 CSV</button>
+      </div>
+      <div id="backupList" class="muted" style="font-size:12px;margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:6px">告警推送 (Webhook)</h2>
+      <p class="muted mb" style="font-size:12px">Key 额度耗尽或错误率过高时推送通知(支持企业微信/钉钉/飞书/TG Bot 等自定义机器人地址)。secret 可选, 非空时按 HMAC-SHA256 签名请求体。</p>
+      <div class="grid2">
+        <div>
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>启用推送</span>
+            <span class="switch-label"><button type="button" class="switch" id="whSwitch" onclick="toggleWebhook()"></button>启用</span>
+          </label>
+          <input id="whUrl" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=...">
+        </div>
+        <div><label>签名 Secret(可选)</label><input id="whSecret" type="password"></div>
+      </div>
+      <div class="row mt"><button class="btn" onclick="testWebhook()">发送测试推送</button><span class="muted" id="whMsg"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:6px">使用方式</h2>
+      <p class="muted mb">第三方 AI 应用把 base_url 指向网关地址(点击复制)。手机连同一 WiFi 时用「局域网」地址:</p>
+      <div id="gwAddrs" class="addr-list">
+        <div class="empty" style="padding:12px">正在探测本机地址...</div>
+      </div>
+      <p class="muted mt">并携带 <code>Authorization: Bearer &lt;网关Key&gt;</code>(若设置了网关 Key)。支持强制指定提供商/Key:请求头 <code>x-relay-provider: openai</code>、<code>x-relay-key: key名称</code>。</p>
+      <div class="muted" style="font-size:11px;margin:10px 0 6px">常用客户端接入模板(点击复制):</div>
+      <div id="clientTemplates" class="addr-list"></div>
+      <div class="row mt" style="gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="copyClientTemplate('chatbox')">复制 ChatBox 配置</button>
+        <button class="btn" onclick="copyClientTemplate('nextchat')">复制 NextChat 配置</button>
+        <button class="btn" onclick="copyClientTemplate('openwebui')">复制 Open WebUI 配置</button>
+        <button class="btn" onclick="exportModelsJson()">导出模型列表 JSON</button>
+      </div>
+      <div class="muted" style="font-size:11px;margin-top:8px">ChatBox 设置 → 添加自定义提供方; NextChat 设置 → 接口地址填入网关 /v1; Open WebUI 环境变量 OPENAI_API_BASE_URL 指向网关。</div>
+    </div>
+  </div>
+</main>
+
+<div class="modal sheet" id="logModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>日志详情</span>
+      <button class="btn sm" onclick="closeLogModal()">关闭</button>
+    </div>
+    <div class="dl" id="logDetailBody"></div>
+  </div>
+</div>
+
+<div class="modal sheet" id="strategyModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>负载均衡策略</span>
+      <button class="btn sm" onclick="closeStrategyModal()">关闭</button>
+    </div>
+    <div id="strategyList" class="sheet-list"></div>
+  </div>
+</div>
+
+<div class="modal sheet" id="tpmModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>自适应 TPM</span>
+      <button class="btn sm" onclick="closeTpmModal()">关闭</button>
+    </div>
+    <div class="sheet-list">
+      <button type="button" class="sheet-item" data-tpm="true" onclick="pickTpm(true)">
+        <span class="si-name">开启<div class="si-desc">根据实时用量自动调整各 Key 的每分钟 Token 预算, 避免限流</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <button type="button" class="sheet-item" data-tpm="false" onclick="pickTpm(false)">
+        <span class="si-name">关闭<div class="si-desc">每个 Key 固定使用配置的每分钟上限</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal sheet" id="gwKeysModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>附加网关密钥</span>
+      <button class="btn sm" onclick="closeGwKeysModal()">关闭</button>
+    </div>
+    <div class="muted" style="font-size:11px;margin-bottom:8px">权限: 全部 / 只读(仅读接口) / 限定模型(仅允许列出的模型); 修改后需在设置页保存</div>
+    <div id="gwKeyList" style="margin-bottom:6px"></div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border)">
+      <input id="gwKeyNew" placeholder="新密钥" style="flex:1;min-width:100px">
+      <button type="button" class="picker-btn" id="gwKeyPermBtn" onclick="openGwKeyPermModal()" style="flex:0 0 auto">
+        <span id="gwKeyPermLabel">全部</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <input id="gwKeyModels" placeholder="限定模型(逗号分隔)" style="flex:1;min-width:120px;display:none">
+      <button class="btn sm" onclick="addGwKey()">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal sheet" id="gwKeyPermModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>密钥权限</span>
+      <button class="btn sm" onclick="closeGwKeyPermModal()">关闭</button>
+    </div>
+    <div class="sheet-list">
+      <button type="button" class="sheet-item" data-gwperm="full" onclick="pickGwKeyPerm('full')">
+        <span class="si-name">全部<div class="si-desc">可读写所有接口与模型</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <button type="button" class="sheet-item" data-gwperm="readonly" onclick="pickGwKeyPerm('readonly')">
+        <span class="si-name">只读<div class="si-desc">仅允许 GET 等读接口, 拒绝写请求</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <button type="button" class="sheet-item" data-gwperm="models" onclick="pickGwKeyPerm('models')">
+        <span class="si-name">限定模型<div class="si-desc">仅允许访问指定模型, 填写模型 id 列表</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal sheet" id="builtinPricingModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>内置价格参考</span>
+      <button class="btn sm" onclick="closeBuiltinPricingModal()">关闭</button>
+    </div>
+    <div class="muted" style="font-size:11px;margin-bottom:8px">美元/百万 token · 按模型前缀匹配, 自定义规则优先于内置表; 用于仪表盘费用预估</div>
+    <div id="builtinPricing"></div>
+  </div>
+</div>
+
+<div class="modal sheet" id="cacheModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>缓存开关</span>
+      <button class="btn sm" onclick="closeCacheModal()">关闭</button>
+    </div>
+    <div class="sheet-list">
+      <button type="button" class="sheet-item" data-cache="true" onclick="pickCache(true)">
+        <span class="si-name">开启<div class="si-desc">缓存幂等请求(GET/非流式 POST)的响应, 相同请求直接命中返回</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <button type="button" class="sheet-item" data-cache="false" onclick="pickCache(false)">
+        <span class="si-name">关闭<div class="si-desc">每个请求都转发上游, 不缓存响应</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+    <div class="row" style="gap:8px;padding-top:12px;border-top:1px solid var(--border);margin-top:4px">
+      <button class="btn" id="cacheClearBtn" onclick="clearCache()" style="flex:1">清空缓存</button>
+      <span class="muted" id="cacheClearMsg" style="font-size:11px;align-self:center"></span>
+    </div>
+  </div>
+</div>
+
+<div class="modal sheet" id="themeModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>主题</span>
+      <button class="btn sm" onclick="closeThemeModal()">关闭</button>
+    </div>
+    <div class="sheet-list">
+      <button type="button" class="sheet-item" data-theme-opt="auto" onclick="pickTheme('auto')">
+        <span class="si-name">自动<div class="si-desc">跟随系统深色/浅色, 系统切换时自动适配</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <button type="button" class="sheet-item" data-theme-opt="light" onclick="pickTheme('light')">
+        <span class="si-name">浅色<div class="si-desc">固定使用浅色主题</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <button type="button" class="sheet-item" data-theme-opt="dark" onclick="pickTheme('dark')">
+        <span class="si-name">深色<div class="si-desc">固定使用深色主题</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal sheet front" id="providerModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>选择提供商</span>
+      <button class="btn sm" onclick="closeProviderModal()">关闭</button>
+    </div>
+    <div id="providerList" class="sheet-list"></div>
+  </div>
+</div>
+
+<div class="modal sheet" id="keyModal">
+  <div class="box">
+    <h2 id="keyModalTitle" style="margin-bottom:6px">添加 Key</h2>
+    <input type="hidden" id="keyId">
+    <div class="grid2">
+      <div>
+        <label>提供商</label>
+        <button type="button" class="picker-btn" id="keyProviderBtn" onclick="openProviderModal()">
+          <span id="keyProviderName">-</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <div><label>名称(可空)</label><input id="keyName" placeholder="如: 主用 openai"></div>
+    </div>
+    <div>
+      <label>API Key(明文, 保存后加密)</label>
+      <div class="pwd-wrap">
+        <input id="keyApi" type="password" placeholder="sk-..." autocomplete="off">
+        <button type="button" class="pwd-eye" onclick="toggleKeySecret()" title="显示/隐藏密钥" aria-label="显示/隐藏密钥">
+          <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+    </div>
+    <div><label>Base URL(可空, 覆盖提供商默认)</label><input id="keyBase" placeholder="https://api.openai.com/v1"></div>
+    <div class="grid3">
+      <div><label>优先级(小优先)</label><input id="keyPriority" type="number" value="100"></div>
+      <div><label>权重</label><input id="keyWeight" type="number" value="1"></div>
+      <div>
+        <label>每分钟请求上限</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input id="keyRpm" type="number" value="60" style="flex:1">
+          <span class="switch-label" title="开启后不限制每分钟请求数"><button type="button" class="switch" id="keyRpmSwitch" onclick="toggleKeyUnlimited('rpm')"></button>不限</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <label>每日配额(Token)</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input id="keyQuota" type="number" value="1000000" style="flex:1">
+        <span class="switch-label" title="开启后不限制每日 Token 用量"><button type="button" class="switch" id="keyQuotaSwitch" onclick="toggleKeyUnlimited('quota')"></button>不限</span>
+      </div>
+    </div>
+    <div><label>备注</label><input id="keyNote"></div>
+    <div class="row mt">
+      <button class="btn primary" id="keySaveBtn">保存</button>
+      <button class="btn" onclick="closeKeyModal()">取消</button>
+      <span class="muted" id="keyMsg"></span>
+    </div>
+  </div>
+</div>
+
+<div class="modal sheet" id="routeModal">
+  <div class="box">
+    <div class="sheet-title">
+      <span>模型路由</span>
+      <button class="btn sm" onclick="closeRouteModal()">关闭</button>
+    </div>
+    <div class="muted" id="routeModelName" style="word-break:break-all;margin-bottom:12px"></div>
+    <div class="muted" style="margin-bottom:8px">勾选允许提供该模型的 Key(未勾选任何 Key = 不限制, 走默认负载均衡)</div>
+    <div id="routeKeyList" style="max-height:40vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:6px"></div>
+    <div class="row mt">
+      <button class="btn primary" onclick="saveRoute()">保存</button>
+      <button class="btn" onclick="clearRoute()">清除规则</button>
+      <button class="btn" onclick="closeRouteModal()">取消</button>
+      <span class="muted" id="routeMsg"></span>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay" style="display:none">
+  <div class="login-box">
+    <h1>InterGate 控制台</h1>
+    <p class="muted mb">请输入管理密码</p>
+    <input id="loginPwd" type="password" placeholder="管理密码">
+    <div class="row mt"><button class="btn primary" id="loginBtn" style="width:100%">登录</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// ---------- 主题(自动/浅/深) ----------
+const THEMES=['auto','light','dark'];
+const THEME_LABEL={auto:'自动',light:'浅色',dark:'深色'};
+let THEME=localStorage.getItem('ig_theme')||'auto';
+function applyTheme(){
+  const root=document.documentElement;
+  const meta=$('metaTheme');
+  if(THEME==='auto'){
+    root.removeAttribute('data-theme');
+  }else{
+    root.setAttribute('data-theme',THEME);
+  }
+  const light = THEME==='light' || (THEME==='auto' && matchMedia('(prefers-color-scheme: light)').matches);
+  if(meta) meta.setAttribute('content', light?'#f4f6fb':'#0b0f1a');
+  localStorage.setItem('ig_theme',THEME);
+}
+function renderThemeBtn(){
+  const b=$('themeName'); if(b) b.textContent=THEME_LABEL[THEME]||'自动';
+}
+function openThemeModal(){
+  document.querySelectorAll('#themeModal .sheet-item').forEach(it=>{
+    const sel = it.dataset.themeOpt===THEME;
+    it.classList.toggle('sel', sel);
+    it.querySelector('.si-check').style.display = sel?'':'none';
+  });
+  $('themeModal').classList.add('open');
+}
+function closeThemeModal(){ $('themeModal').classList.remove('open'); }
+function pickTheme(v){
+  THEME = THEMES.includes(v)?v:'auto';
+  applyTheme();
+  renderThemeBtn();
+  closeThemeModal();
+  toast('主题已切换: '+THEME_LABEL[THEME]);
+}
+window.openThemeModal=openThemeModal;
+window.closeThemeModal=closeThemeModal;
+window.pickTheme=pickTheme;
+applyTheme();
+renderThemeBtn();
+matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if(THEME==='auto') applyTheme(); });
+
+let PROVIDERS = {};
+
+function toast(msg, ms=2600){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'), ms);
+}
+function fadeIn(el){
+  if(!el) return;
+  el.classList.remove('anim-fade');
+  void el.offsetWidth; // 强制 reflow 以重启动画
+  el.classList.add('anim-fade');
+}
+async function api(path, opts={}){
+  const headers = {'Content-Type':'application/json'};
+  const token = localStorage.getItem('ig_token');
+  if(token) headers['Authorization']='Bearer '+token;
+  const res = await fetch(path, {...opts, headers});
+  if(res.status===401){ showLogin(); throw new Error('unauthorized'); }
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok){ throw new Error(data.error?.message || data.error || res.status); }
+  return data;
+}
+function fmtTime(ts){
+  if(!ts) return '-';
+  const d=new Date(ts); const p=n=>String(n).padStart(2,'0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+function fmtDay(ts){
+  const d=new Date(ts); const p=n=>String(n).padStart(2,'0');
+  return `${d.getMonth()+1}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function fmtNum(n){
+  if(n===null||n===undefined) return '-';
+  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+  if(n>=1e3) return (n/1e3).toFixed(1)+'k';
+  return String(n);
+}
+const STATUS_TAG = {active:['green','活跃'],inactive:['gray','停用'],exhausted:['red','耗尽'],error:['yellow','异常']};
+
+// ---------- 状态与开关 ----------
+let GW_ON=false;
+let GW_IPS={loopback:'127.0.0.1', lan:[]};
+let GW_PORT=51234, WEB_PORT=51235;
+let GW_KEY='', GW_AUTH=false;   // 网关访问密钥 + 鉴权开关
+
+function copyText(txt){
+  const done=()=>toast('已复制: '+txt);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt,done));
+  } else fallbackCopy(txt,done);
+}
+function fallbackCopy(txt,done){
+  const ta=document.createElement('textarea');
+  ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ toast('复制失败'); }
+  document.body.removeChild(ta);
+}
+window.copyText=copyText;
+function renderAddrs(){
+  const boxes=document.querySelectorAll('.addr-list');
+  if(!boxes.length) return;
+  // 构造地址列表(URL 去重)
+  const list=[], seen=new Set();
+  const add=(tag,url)=>{
+    if(seen.has(url)) return;
+    seen.add(url);
+    list.push(
+      `<div class="addr-row"><span class="addr-tag">${tag}</span>`+
+      `<code class="addr-code" onclick="copyText('${url}')" title="点击复制">${url}</code>`+
+      `<button class="btn sm" onclick="copyText('${url}')">复制</button></div>`);
+  };
+  const lb=GW_IPS.loopback||'127.0.0.1';
+  const lans=(GW_IPS.lan&&GW_IPS.lan.length)?GW_IPS.lan:null;
+  add('网关·本机', `http://${lb}:${GW_PORT}/v1`);
+  if(lans){ lans.forEach(ip=>add('网关·局域网', `http://${ip}:${GW_PORT}/v1`)); }
+  add('控制台·本机', `http://${lb}:${WEB_PORT}`);
+  if(lans){ lans.forEach(ip=>add('控制台·局域网', `http://${ip}:${WEB_PORT}`)); }
+  const full=list.join('') ||
+    `<div class="empty" style="padding:12px">未探测到局域网地址,请检查网络</div>`;
+  // 仪表盘卡片仅显示网关地址, 设置页显示全部(避免重复)
+  const gatewayOnly=list.filter(x=>x.includes('网关·')).join('') ||
+    `<div class="empty" style="padding:12px">未探测到地址</div>`;
+  boxes.forEach(box=>{
+    box.innerHTML = (box.id==='gwAddrsMini') ? gatewayOnly : full;
+  });
+}
+async function loadStatus(){
+  try{
+    const d = await api('/api/status');
+    GW_ON = !!d.gateway_enabled;
+    if(d.ips) GW_IPS=d.ips;
+    if(d.gateway_port) GW_PORT=d.gateway_port;
+    if(d.web_port) WEB_PORT=d.web_port;
+    renderAddrs();
+    updateGwUI();
+    const st=d.stats||{};
+    $('stReq').textContent=fmtNum(st.requests_today);
+    $('stErr').textContent='错误 '+fmtNum(st.errors_today);
+    $('stTok').textContent=fmtNum(st.used_today);
+    $('stKey').textContent=fmtNum(st.total_keys);
+    $('stActiveKey').textContent='活跃 '+fmtNum(st.active_keys);
+    const c=st.cache||{};
+    // 缓存命中率: 主显示今日命中率(与其它卡片同为今日口径), 副显示累计命中率
+    $('stCache').textContent=c.hit_rate_today!=null?(c.hit_rate_today*100).toFixed(1)+'%':'-';
+    $('stModel').textContent='今日 '+fmtNum(c.hits_today||0)+' 命中 · 累计 '+(c.hit_rate!=null?(c.hit_rate*100).toFixed(1)+'%':'-');
+    loadProviderChart();
+    loadPricingStats();
+    loadAlerts();
+  }catch(e){}
+}
+async function toggleGateway(){
+  const target=!GW_ON;
+  const btns=document.querySelectorAll('#toggleGw,#gwBigToggle');
+  btns.forEach(b=>b.disabled=true);
+  try{
+    const r=await api('/api/gateway/toggle',{method:'POST',body:JSON.stringify({enabled:target})});
+    GW_ON=!!r.gateway_enabled;
+    updateGwUI();
+    toast(GW_ON?'网关已启动':'网关已暂停');
+  }catch(e){ toast(e.message); }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+function updateGwUI(){
+  const on=GW_ON;
+  const b=$('gwBadge'); b.className='badge '+(on?'on':'off');
+  $('gwBadgeText').textContent=on?`运行中 · :${GW_PORT}`:'已暂停';
+  const tg=$('toggleGw'); if(tg) tg.textContent=on?'暂停网关':'启动网关';
+  const bt=$('gwBigToggle'); if(bt) bt.textContent=on?'暂停网关':'启动网关';
+  const led=$('gwBigLed');
+  if(led){
+    led.style.background=on?'var(--green)':'var(--red)';
+    led.style.boxShadow=on?'0 0 8px var(--green)':'0 0 8px var(--red)';
+  }
+  const tx=$('gwBigText'); if(tx) tx.textContent=on?'运行中':'已暂停';
+  renderGwKeyRow();
+}
+// 仪表盘: 鉴权开启显示网关密钥, 关闭隐藏
+function renderGwKeyRow(){
+  const row=$('gwKeyRow'); if(!row) return;
+  const show = GW_AUTH && GW_KEY;
+  row.style.display = show?'flex':'none';
+  if(show){
+    $('gwKeyCode').textContent=GW_KEY;
+    $('gwKeyCopyBtn').onclick=()=>copyText(GW_KEY);
+  }
+}
+async function toggleGwKeyAuth(){
+  const next = !GW_AUTH;
+  const inp=$('set-gatewayKey');
+  if(next){
+    // 开启: 仪表盘显示密钥; 输入框有新值则一并提交生效
+    const v=(inp.value||'').trim();
+    if(v && v!==GW_KEY){
+      try{
+        const r=await api('/api/settings',{method:'PUT',body:JSON.stringify({gateway_key:v})});
+        GW_KEY=r.settings?.gateway_key||'';
+      }catch(e){ toast(e.message); return; }
+    }
+    if(!GW_KEY){
+      // 从未设置过密钥: 切到开启态并聚焦输入, 输入后保存生效
+      GW_AUTH=true;
+      syncGwKeyAuthUI();
+      if(inp){ inp.focus(); inp.scrollIntoView({block:'center'}); }
+      toast('请输入网关访问 Key, 再点「保存设置」生效');
+      return;
+    }
+    GW_AUTH=true;
+    try{
+      await api('/api/settings',{method:'PUT',body:JSON.stringify({gateway_key_enabled:true})});
+    }catch(e){ toast(e.message); return; }
+    syncGwKeyAuthUI(); renderGwKeyRow();
+    toast('已开启鉴权: 调用需带正确 Key, 仪表盘显示密钥');
+  }else{
+    // 关闭: 网关不鉴权, 无需 key 即可调用; Key 数据保留不清空
+    GW_AUTH=false;
+    try{
+      await api('/api/settings',{method:'PUT',body:JSON.stringify({gateway_key_enabled:false})});
+    }catch(e){ toast(e.message); return; }
+    syncGwKeyAuthUI(); renderGwKeyRow();
+    toast('已关闭鉴权: 无需 Key 即可调用, Key 已保留');
+  }
+}
+// ---------- 模型自动同步 ----------
+let SYNC_AUTO = true;
+function syncSyncUI(){
+  const sw=$('set-syncSwitch'); if(sw) sw.classList.toggle('on', SYNC_AUTO);
+  const iv=$('set-syncInterval'); if(iv) iv.disabled = !SYNC_AUTO;
+}
+function toggleSyncSwitch(){
+  SYNC_AUTO = !SYNC_AUTO;
+  syncSyncUI();
+  if(SYNC_AUTO && !(+($('set-syncInterval')||{value:60}).value)) $('set-syncInterval').value=60;
+}
+window.toggleSyncSwitch=toggleSyncSwitch;
+function syncGwKeyAuthUI(){
+  // GW_AUTH 由 loadSettings/toggleGwKeyAuth 维护, 此处只渲染
+  const sw=$('gwKeySwitch'); if(sw) sw.classList.toggle('on', GW_AUTH);
+  const inp=$('set-gatewayKey');
+  if(inp){
+    inp.disabled=false;   // 始终可编辑: 关闭时可预填, 开启时直接生效
+    inp.placeholder = GW_AUTH?'客户端需带 Authorization: Bearer <key>':'未开启: 输入密钥并开启开关生效';
+  }
+  const hint=$('gwKeyHint');
+  if(hint) hint.textContent = GW_AUTH?'开启: 调用需带 Bearer 密钥, 仪表盘显示 Key':'关闭: 无需 Key 即可调用, Key 保留不清空';
+  renderGwKeyRow();
+}
+$('toggleGw').onclick=toggleGateway;
+$('gwBigToggle').onclick=toggleGateway;
+// 刷新: 重新拉取所有页面的实时数据(status 内部已含预估/告警/提供商图)
+let REFRESHING=false;
+$('refreshBtn').onclick=async ()=>{
+  if(REFRESHING) return;
+  REFRESHING=true;
+  const btn=$('refreshBtn');
+  btn.disabled=true; btn.textContent='刷新中...';
+  try{
+    await Promise.allSettled([
+      loadStatus(), loadKeys(), loadModels(), loadLogs(),
+      loadTrend(TREND_DAYS), probeHealth(), loadRoutes(), loadGwKeys(),
+    ]);
+    toast('已刷新');
+  }catch(e){ toast('刷新失败: '+e.message); }
+  btn.disabled=false; btn.textContent='刷新';
+  REFRESHING=false;
+};
+
+// ---------- 仪表盘 ----------
+async function loadPricingStats(){
+  try{
+    const d=await api('/api/stats?days=7');
+    const p=d.pricing||{};
+    const fmt=u=>u>=0.01?'$'+u.toFixed(2):(u>0?'<$0.01':'$0.00');
+    $('prTotal').textContent=fmt(p.total_usd||0);
+    $('prToday').textContent=fmt((p.today_usd||0));
+    const models=p.models||[];
+    const max=Math.max(1e-9,...models.map(m=>m.cost_usd||0));
+    $('priceChart').innerHTML = models.length?models.map(m=>{
+      const name=esc(m.model||'未知模型');
+      const tok=fmtNum((m.prompt_tokens||0)+(m.completion_tokens||0));
+      return `<div class="chart-row"><div class="name pname"><span class="nm" title="${name}">${name}</span><span class="sub">${tok} tokens</span></div>
+      <div class="bar"><i style="width:${((m.cost_usd||0)/max*100).toFixed(1)}%"></i></div>
+      <div class="val">${fmt(m.cost_usd||0)}</div></div>`;
+    }).join('') : '<div class="empty">近 7 日暂无成功请求</div>';
+  }catch(e){}
+}
+async function loadProviderChart(){
+  try{
+    const d=await api('/api/stats?days=7');
+    const provs=(d.summary&&d.summary.providers)||[];
+    const max=Math.max(1,...provs.map(p=>p.requests||0));
+    $('providerChart').innerHTML = provs.length?provs.map(p=>`
+      <div class="chart-row"><div class="name">${p.provider}</div>
+      <div class="bar"><i style="width:${(p.requests/max*100).toFixed(1)}%"></i></div>
+      <div class="val">${fmtNum(p.requests)} 次</div></div>`).join('') : '<div class="empty">暂无数据</div>';
+  }catch(e){}
+}
+async function loadAlerts(){
+  try{
+    const d=await api('/api/stats');
+    const alerts=d.alerts||[];
+    const box=$('alertsBox');
+    box.innerHTML=alerts.length?alerts.slice(-10).reverse().map(a=>
+      `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--row-border)"><span class="tag red">${a.type}</span><span>${esc(a.message)}</span><span class="muted" style="font-size:12px">${fmtDay(a.ts)}</span></div>`
+    ).join('') : '<div class="empty">暂无告警</div>';
+  }catch(e){}
+}
+
+// ---------- Key ----------
+function keyRowHtml(k){
+  const st=STATUS_TAG[k.status]||['gray',k.status];
+  const qr=Math.min(100,k.quota_ratio*100);
+  return `<tr>
+    <td><b>${esc(k.name)}</b><div class="muted" style="font-size:11px">${esc(k.id)}</div></td>
+    <td><span class="tag">${esc(k.provider)}</span></td>
+    <td><code>${esc(k.masked_key)}</code></td>
+    <td><span class="tag ${st[0]}">${st[1]}</span></td>
+    <td>${k.priority}</td><td>${k.weight}</td>
+    <td>${fmtNum(k.used_today)} <div class="progress" style="margin-top:4px"><i style="width:${qr}%"></i></div></td>
+    <td>${k.daily_quota?fmtNum(k.quota_remaining)+' / '+fmtNum(k.daily_quota):'不限'}</td>
+    <td>${(k.error_rate*100).toFixed(1)}%</td>
+    <td><div class="ops">
+      <button class="btn sm" onclick="testKey('${k.id}')">测试</button>
+      <button class="btn sm" onclick="editKey('${k.id}')">编辑</button>
+      <button class="btn sm danger" onclick="toggleKeyStatus('${k.id}','${k.status==='active'?'inactive':'active'}')">${k.status==='active'?'停用':'启用'}</button>
+      <button class="btn sm danger" onclick="delKey('${k.id}')">删除</button>
+    </div></td></tr>`;
+}
+function keyCardHtml(k){
+  const st=STATUS_TAG[k.status]||['gray',k.status];
+  const qr=Math.min(100,k.quota_ratio*100);
+  return `<div class="mc-card">
+    <div class="mc-head">
+      <div><b>${esc(k.name)}</b><div class="muted" style="font-size:11px">${esc(k.id)}</div></div>
+      <div class="spacer"></div>
+      <span class="tag ${st[0]}">${st[1]}</span>
+    </div>
+    <div class="mc-grid">
+      <div><span class="mc-label">提供商</span><span class="tag">${esc(k.provider)}</span></div>
+      <div><span class="mc-label">Key</span><code>${esc(k.masked_key)}</code></div>
+      <div><span class="mc-label">优先级 / 权重</span>${k.priority} / ${k.weight}</div>
+      <div><span class="mc-label">错误率</span>${(k.error_rate*100).toFixed(1)}%</div>
+    </div>
+    <div class="mc-quota"><span class="mc-label">今日用量</span>
+      <div style="display:flex;justify-content:space-between;font-size:12px">
+        <span>${fmtNum(k.used_today)}</span>
+        <span class="muted">${k.daily_quota?fmtNum(k.quota_remaining)+' / '+fmtNum(k.daily_quota):'不限'}</span>
+      </div>
+      <div class="progress" style="width:100%;margin-top:4px"><i style="width:${qr}%"></i></div>
+    </div>
+    <div class="mc-ops">
+      <button class="btn sm" onclick="testKey('${k.id}')">测试</button>
+      <button class="btn sm" onclick="editKey('${k.id}')">编辑</button>
+      <button class="btn sm danger" onclick="toggleKeyStatus('${k.id}','${k.status==='active'?'inactive':'active'}')">${k.status==='active'?'停用':'启用'}</button>
+      <button class="btn sm danger" onclick="delKey('${k.id}')">删除</button>
+    </div>
+  </div>`;
+}
+async function loadKeys(){
+  try{
+    const keys=await api('/api/keys');
+    KEYS=keys;
+    $('keysBody').innerHTML=keys.map(keyRowHtml).join('')
+      || '<tr><td colspan="10" class="empty">暂无 Key,点击右上角添加</td></tr>';
+    $('keysCards').innerHTML=keys.map(keyCardHtml).join('')
+      || '<div class="empty">暂无 Key,点击右上角添加</div>';
+    fadeIn($('keysBody')); fadeIn($('keysCards'));
+  }catch(e){ toast(e.message); }
+}
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let KEY_PROVIDER='';
+function renderKeyProviderBtn(){
+  const b=$('keyProviderName'); if(b) b.textContent=KEY_PROVIDER||'-';
+}
+function openProviderModal(){
+  const list=$('providerList');
+  list.innerHTML=PROVIDERS.map(p=>`
+    <button type="button" class="sheet-item" data-prov="${esc(p.id)}" onclick="pickProvider('${esc(p.id)}')">
+      <span class="si-name">${esc(p.id)}<div class="si-desc">${esc(p.default_base_url||'')}</div></span>
+      <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>`).join('');
+  list.querySelectorAll('.sheet-item').forEach(it=>{
+    const sel = it.dataset.prov===KEY_PROVIDER;
+    it.classList.toggle('sel', sel);
+    it.querySelector('.si-check').style.display = sel?'':'none';
+  });
+  $('providerModal').classList.add('open');
+}
+function closeProviderModal(){ $('providerModal').classList.remove('open'); }
+// 点击遮罩(弹窗外区域)关闭最上层弹窗
+document.addEventListener('click',e=>{
+  const m=e.target.closest('.modal');
+  if(m && e.target===m && m.classList.contains('open')) m.classList.remove('open');
+});
+function pickProvider(v){
+  KEY_PROVIDER=v;
+  renderKeyProviderBtn();
+  closeProviderModal();
+}
+window.openProviderModal=openProviderModal;
+window.closeProviderModal=closeProviderModal;
+window.pickProvider=pickProvider;
+async function loadProviders(){
+  try{
+    const d=await api('/api/providers');
+    PROVIDERS=d.providers;
+    if(!KEY_PROVIDER && PROVIDERS.length) KEY_PROVIDER=PROVIDERS[0].id;
+    renderKeyProviderBtn();
+  }catch(e){}
+}
+function resetKeySecret(){
+  const inp=$('keyApi'); if(!inp) return;
+  inp.type='password';
+  const on=$('keyModal').querySelector('.eye-on');
+  const off=$('keyModal').querySelector('.eye-off');
+  if(on) on.style.display=''; if(off) off.style.display='none';
+}
+function toggleKeySecret(){
+  const inp=$('keyApi'); if(!inp) return;
+  const show = inp.type==='password';
+  inp.type = show?'text':'password';
+  const on=$('keyModal').querySelector('.eye-on');
+  const off=$('keyModal').querySelector('.eye-off');
+  if(on) on.style.display = show?'':'none';
+  if(off) off.style.display = show?'none':'';
+}
+window.toggleKeySecret=toggleKeySecret;
+// ---------- Key 不限开关(RPM / 每日配额) ----------
+let KEY_RPM_UNLIM=false, KEY_QUOTA_UNLIM=false;
+function syncKeyUnlimitedUI(){
+  const pairs=[['keyRpm','keyRpmSwitch',KEY_RPM_UNLIM],['keyQuota','keyQuotaSwitch',KEY_QUOTA_UNLIM]];
+  pairs.forEach(([inpId,swId,unlim])=>{
+    const sw=$(swId), inp=$(inpId);
+    if(sw) sw.classList.toggle('on', unlim);
+    if(inp) inp.disabled=unlim;
+  });
+}
+function toggleKeyUnlimited(t){
+  if(t==='rpm') KEY_RPM_UNLIM=!KEY_RPM_UNLIM;
+  else KEY_QUOTA_UNLIM=!KEY_QUOTA_UNLIM;
+  syncKeyUnlimitedUI();
+}
+window.toggleKeyUnlimited=toggleKeyUnlimited;
+$('addKeyBtn').onclick=()=>{ $('keyId').value=''; $('keyModalTitle').textContent='添加 Key';
+  ['keyApi','keyName','keyBase','keyNote'].forEach(i=>$(i).value='');
+  KEY_PROVIDER=PROVIDERS.length?PROVIDERS[0].id:''; renderKeyProviderBtn();
+  $('keyPriority').value=100; $('keyWeight').value=1; $('keyRpm').value=60; $('keyQuota').value=1000000;
+  KEY_RPM_UNLIM=false; KEY_QUOTA_UNLIM=false; syncKeyUnlimitedUI();
+  $('keyMsg').textContent=''; resetKeySecret(); $('keyModal').classList.add('open'); };
+function closeKeyModal(){ $('keyModal').classList.remove('open'); }
+window.closeKeyModal=closeKeyModal;
+function editKey(id){
+  // 从已加载列表找
+  api('/api/keys').then(keys=>{
+    const k=keys.find(x=>x.id===id); if(!k) return;
+    $('keyId').value=k.id; $('keyModalTitle').textContent='编辑 '+k.name;
+    KEY_PROVIDER=k.provider; renderKeyProviderBtn();
+    $('keyName').value=k.name;
+    $('keyApi').value=''; $('keyBase').value=k.base_url||'';
+    $('keyPriority').value=k.priority; $('keyWeight').value=k.weight;
+    $('keyRpm').value=k.max_requests_per_minute||60; $('keyQuota').value=k.daily_quota||1000000;
+    KEY_RPM_UNLIM=!(k.max_requests_per_minute>0); KEY_QUOTA_UNLIM=!(k.daily_quota>0);
+    syncKeyUnlimitedUI();
+    $('keyNote').value=k.note||'';
+    $('keyMsg').textContent='正在加载密钥...';
+    resetKeySecret(); $('keyModal').classList.add('open');
+    // 回显当前密钥明文(仅编辑时)
+    api('/api/keys/'+encodeURIComponent(id)+'/secret').then(r=>{
+      $('keyApi').value=r.key||'';
+      $('keyMsg').textContent='修改保存后将以新密钥覆盖';
+    }).catch(e=>{
+      $('keyMsg').textContent='密钥加载失败: '+e.message+' (留空表示不修改)';
+    });
+  });
+}
+$('keySaveBtn').onclick=async()=>{
+  const id=$('keyId').value;
+  const body={
+    provider:KEY_PROVIDER, name:$('keyName').value,
+    api_key:$('keyApi').value, base_url:$('keyBase').value,
+    priority:+$('keyPriority').value, weight:+$('keyWeight').value,
+    max_requests_per_minute:KEY_RPM_UNLIM?0:+$('keyRpm').value,
+    daily_quota:KEY_QUOTA_UNLIM?0:+$('keyQuota').value,
+    note:$('keyNote').value,
+  };
+  try{
+    if(id) await api('/api/keys/'+id,{method:'PUT',body:JSON.stringify(body)});
+    else await api('/api/keys',{method:'POST',body:JSON.stringify(body)});
+    toast('已保存'); closeKeyModal(); loadKeys(); loadStatus();
+  }catch(e){ $('keyMsg').textContent=e.message; }
+};
+async function testKey(id){
+  try{ const r=await api('/api/keys/'+id+'/test',{method:'POST'});
+    toast('测试通过: '+r.message); loadKeys(); }catch(e){ toast('测试失败: '+e.message); loadKeys(); }
+}
+$('testAllBtn').onclick=async()=>{
+  toast('批量测试中...'); 
+  try{ const r=await api('/api/keys/test-all',{method:'POST'});
+    const ok=r.results.filter(x=>x.ok).length;
+    toast(`完成: ${ok}/${r.results.length} 通过`); loadKeys(); }catch(e){ toast(e.message); }
+};
+async function toggleKeyStatus(id,status){
+  try{ await api('/api/keys/'+id,{method:'PUT',body:JSON.stringify({status})});
+    loadKeys(); }catch(e){ toast(e.message); }
+}
+window.toggleKeyStatus=toggleKeyStatus;
+async function delKey(id){
+  if(!confirm('确认删除该 Key?')) return;
+  try{ await api('/api/keys/'+id,{method:'DELETE'}); toast('已删除'); loadKeys(); loadStatus(); }
+  catch(e){ toast(e.message); }
+}
+window.delKey=delKey;
+
+// ---------- 模型 ----------
+let MODELS=[];
+let KEYS=[];
+function groupByProvider(models){
+  const map=new Map();
+  models.forEach(m=>{
+    const p=(m.source||m.provider||'other').trim()||'other';
+    if(!map.has(p)) map.set(p,[]);
+    map.get(p).push(m);
+  });
+  return [...map.entries()];
+}
+function groupHeadHtml(prov,list){
+  const on=list.filter(m=>m.enabled!==false).length;
+  // 该组由几个 Key 提供(冗余 Key 聚合, 去重)
+  const ks=new Set();
+  list.forEach(m=>(m.source_keys||[]).forEach(k=>ks.add(k)));
+  const keyInfo=ks.size>1?` · ${ks.size} 个 Key`:'';
+  return `<div class="gh">
+    <span class="tag">${esc(prov)}</span>
+    <span class="cnt">${list.length} 个 · 开启 ${on}${keyInfo}</span>
+    <span class="btns">
+      <button class="btn sm" onclick="toggleProvider('${esc(prov)}',true)">全开</button>
+      <button class="btn sm" onclick="toggleProvider('${esc(prov)}',false)">全关</button>
+    </span>
+  </div>`;
+}
+function modelNameHtml(m){
+  const name = m.name||m.id;
+  const sub = (m.name && m.name!==m.id) ? m.id : '';
+  // 完整来源: 冗余 Key 聚合显示(按 Key id 计数, 同名 Key 也算多个)
+  const srcs=(m.source_keys||[m.source_key]).filter(Boolean);
+  const title=srcs.length>1
+    ? ('由 '+srcs.length+' 个 Key 提供'+(m.base_url?' · '+m.base_url:''))
+    : (m.base_url?m.base_url:'');
+  return `<b title="${esc(title)}">${esc(name)}</b>${sub?`<div class="muted" style="font-size:11px;word-break:break-all">${esc(sub)}</div>`:''}`;
+}
+function modelRowHtml(m){
+  const on = m.enabled!==false;
+  return `<tr>
+  <td>${modelNameHtml(m)}</td>
+  <td>${(m.capabilities||[]).map(c=>`<span class="tag green">${c}</span>`).join(' ')||'-'}</td>
+  <td style="white-space:nowrap">
+    <button class="btn sm" onclick="routeModel('${esc(m.id)}')" title="设置该模型使用哪些 Key">路由</button>
+    <button class="switch ${on?'on':''}" onclick="toggleModel('${esc(m.id)}',${!on})" title="${on?'点击关闭':'点击开启'}"></button>
+  </td></tr>`;
+}
+function modelsTableHtml(models){
+  const groups=groupByProvider(models);
+  if(!groups.length) return '<tr><td colspan="3" class="empty">尚未同步模型,点击右上角「同步模型」</td></tr>';
+  return groups.map(([prov,list])=>
+    `<tr class="group-head"><td colspan="3">${groupHeadHtml(prov,list)}</td></tr>`+
+    list.map(modelRowHtml).join('')).join('');
+}
+function modelCardHtml(m){
+  const on = m.enabled!==false;
+  return `<div class="mc-card model-card">
+    <div style="flex:1;min-width:0;overflow:hidden">${modelNameHtml(m)}</div>
+    ${(m.capabilities||[]).map(c=>`<span class="tag green">${c}</span>`).join(' ')}
+    <button class="btn sm" onclick="routeModel('${esc(m.id)}')">路由</button>
+    <button class="switch ${on?'on':''}" onclick="toggleModel('${esc(m.id)}',${!on})" title="${on?'点击关闭':'点击开启'}"></button>
+  </div>`;
+}
+function modelsCardsHtml(models){
+  const groups=groupByProvider(models);
+  if(!groups.length) return '<div class="empty">尚未同步模型,点击右上角「同步模型」</div>';
+  return groups.map(([prov,list])=>
+    `<div class="mc-group">${groupHeadHtml(prov,list)}${list.map(modelCardHtml).join('')}</div>`).join('');
+}
+// ---------- 模型路由 ----------
+let ROUTES={};
+async function loadRoutes(){
+  try{ const d=await api('/api/routes'); ROUTES=d.routes||{}; }
+  catch(e){ ROUTES={}; }
+}
+function routeModel(id){
+  const rule=ROUTES[id];
+  const checked=(rule&&rule.enabled)?new Set(rule.key_ids||[]):new Set();
+  // 默认选中当前提供该模型的 Key
+  if(!rule){
+    const m=MODELS.find(x=>x.id===id);
+    (m&&m.source_keys||[]).forEach(k=>checked.add(k));
+  }
+  $('routeModelName').textContent=id;
+  const all=KEYS||[];
+  if(!all.length){
+    $('routeKeyList').innerHTML='<div class="muted" style="padding:10px">未加载到 Key 列表</div>';
+  }else{
+    $('routeKeyList').innerHTML=all.map(k=>
+      `<label class="row" style="justify-content:flex-start;gap:10px;padding:8px 6px;border-bottom:1px solid var(--border);cursor:pointer">
+        <input type="checkbox" value="${esc(k.id)}" ${checked.has(k.id)?'checked':''} onchange="routeCheck(this)">
+        <span>${esc(k.name||k.provider)}</span>
+        <span class="muted" style="font-size:11px">${esc(k.provider)}${k.base_url?' · '+esc(k.base_url):''}</span>
+        <span class="muted" style="font-size:11px;margin-left:auto">${esc(k.id)}</span>
+      </label>`).join('');
+  }
+  $('routeMsg').textContent='';
+  $('routeModal').classList.add('open');
+}
+function routeCheck(cb){
+  if(cb.checked){ cb.closest('label').style.background='var(--panel2)'; }
+  else cb.closest('label').style.background='';
+}
+function closeRouteModal(){ $('routeModal').classList.remove('open'); }
+async function saveRoute(){
+  const id=$('routeModelName').textContent;
+  const keyIds=[...document.querySelectorAll('#routeKeyList input:checked')].map(i=>i.value);
+  try{
+    await api('/api/routes/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify({key_ids:keyIds,enabled:true})});
+    await loadRoutes(); closeRouteModal(); toast('路由已保存');
+  }catch(e){ $('routeMsg').textContent='保存失败: '+e.message; }
+}
+async function clearRoute(){
+  const id=$('routeModelName').textContent;
+  try{
+    await api('/api/routes/'+encodeURIComponent(id),{method:'DELETE'});
+    await loadRoutes(); closeRouteModal(); toast('路由已清除');
+  }catch(e){ $('routeMsg').textContent='清除失败: '+e.message; }
+}
+window.routeModel=routeModel; window.routeCheck=routeCheck;
+window.closeRouteModal=closeRouteModal; window.saveRoute=saveRoute; window.clearRoute=clearRoute;
+
+async function loadModels(){
+  try{
+    const d=await api('/api/models');
+    MODELS=d.models;
+    $('modelInfo').textContent=`共 ${d.models.length} 个`;
+    $('modelsBody').innerHTML=modelsTableHtml(d.models);
+    $('modelsCards').innerHTML=modelsCardsHtml(d.models);
+    fadeIn($('modelsBody')); fadeIn($('modelsCards'));
+  }catch(e){ toast(e.message); }
+}
+async function syncModels(){
+  const btns=document.querySelectorAll('#syncBtn,#syncBtn2');
+  btns.forEach(b=>{ b.textContent='同步中...'; b.disabled=true; });
+  try{ const r=await api('/api/sync',{method:'POST'});
+    toast(`同步完成,共 ${r.count} 个模型`); loadModels(); loadStatus(); }
+  catch(e){ toast('同步失败: '+e.message); }
+  finally{ btns.forEach(b=>{ b.textContent='同步模型'; b.disabled=false; }); }
+}
+$('syncBtn').onclick=syncModels;
+$('syncBtn2').onclick=syncModels;
+async function toggleModel(id, enabled){
+  try{
+    await api('/api/models/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify({enabled})});
+    toast(enabled?'已开启: '+id:'已关闭: '+id);
+    loadModels(); loadStatus();
+  }catch(e){ toast(e.message); }
+}
+window.toggleModel=toggleModel;
+async function toggleProvider(prov, enabled){
+  const list=MODELS.filter(m=>(m.source||m.provider||'other').trim()===prov);
+  if(!list.length) return;
+  try{
+    await Promise.all(list.map(m=>
+      api('/api/models/'+encodeURIComponent(m.id),{method:'PUT',body:JSON.stringify({enabled})})));
+    toast(`已${enabled?'开启':'关闭'} ${prov} 的 ${list.length} 个模型`);
+    loadModels(); loadStatus();
+  }catch(e){ toast(e.message); }
+}
+window.toggleProvider=toggleProvider;
+
+// ---------- 日志 ----------
+function logRowHtml(l,i){
+  return `<tr class="clickable" onclick="showLogDetail(${i})">
+    <td class="muted">${fmtDay(l.ts)}</td>
+    <td><code>${esc(l.path)}</code></td>
+    <td><span class="tag ${l.status<400?'green':l.status<500?'yellow':'red'}">${l.status}</span></td>
+    <td>${esc(l.provider||'-')}</td><td class="muted">${esc((l.key_id||'-').slice(0,8))}</td>
+    <td>${esc(l.model||'-')}</td>
+    <td>${l.latency_ms}ms</td>
+    <td>${l.total_tokens?fmtNum(l.total_tokens):'-'}</td>
+    <td>${l.cached?'<span class="tag yellow">HIT</span>':''}</td></tr>`;
+}
+function logCardHtml(l,i){
+  const stCls=l.status<400?'green':l.status<500?'yellow':'red';
+  return `<div class="mc-card clickable" onclick="showLogDetail(${i})">
+    <div class="mc-head">
+      <span class="tag ${stCls}">${l.status}</span>
+      <code>${esc(l.path)}</code>
+      <div class="spacer"></div>
+      <span class="muted" style="font-size:12px">${fmtDay(l.ts)}</span>
+    </div>
+    <div class="mc-grid">
+      <div><span class="mc-label">模型</span>${esc(l.model||'-')}</div>
+      <div><span class="mc-label">提供商</span>${esc(l.provider||'-')}</div>
+      <div><span class="mc-label">延迟</span>${l.latency_ms}ms</div>
+      <div><span class="mc-label">Tokens</span>${l.total_tokens?fmtNum(l.total_tokens):'-'}</div>
+    </div>
+  </div>`;
+}
+let LOGS=[];
+function fmtFull(ts){
+  const d=new Date(ts); const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+function showLogDetail(i){
+  const l=LOGS[i]; if(!l) return;
+  const stCls=l.status<400?'green':l.status<500?'yellow':'red';
+  const item=(k,v,cls='')=>`<div class="item"><span class="k">${k}</span><span class="v ${cls}">${v}</span></div>`;
+  const html=
+    item('时间', fmtFull(l.ts))+
+    item('方法', `<code>${esc(l.method)}</code>`)+
+    item('路径', `<code>${esc(l.path)}</code>`)+
+    `<div class="item"><span class="k">状态</span><span class="v"><span class="tag ${stCls}">${l.status}</span>${l.cached?' <span class="tag yellow">缓存命中</span>':''}</span></div>`+
+    item('提供商', esc(l.provider)||'-')+
+    item('Key ID', esc(l.key_id)||'-')+
+    item('模型', esc(l.model)||'-')+
+    `<div class="item"><span class="k">Token 用量</span><span class="v"><div class="row2"><span>输入 <b>${l.prompt_tokens?fmtNum(l.prompt_tokens):'-'}</b></span><span>输出 <b>${l.completion_tokens?fmtNum(l.completion_tokens):'-'}</b></span><span>合计 <b>${l.total_tokens?fmtNum(l.total_tokens):'-'}</b></span></div></span></div>`+
+    item('延迟', `${l.latency_ms} ms`)+
+    (l.error?item('错误', esc(l.error), 'err'):'');
+  $('logDetailBody').innerHTML=html;
+  $('logModal').classList.add('open');
+}
+function closeLogModal(){ $('logModal').classList.remove('open'); }
+window.closeLogModal=closeLogModal;
+async function clearLogs(){
+  if(!LOGS || !LOGS.length){ toast('暂无日志可清空'); return; }
+  if(!confirm('确定清空全部请求日志?此操作不可恢复')) return;
+  try{
+    const r=await api('/api/logs',{method:'DELETE'});
+    LOGS=[];
+    $('logsBody').innerHTML='<tr><td colspan="9" class="empty">暂无日志</td></tr>';
+    $('logsCards').innerHTML='<div class="empty">暂无日志</div>';
+    toast(`已清空 ${r.deleted||0} 条日志`);
+    loadStatus();
+  }catch(e){ toast(e.message); }
+}
+$('clearLogsBtn').onclick=clearLogs;
+
+let LOG_PAGE=0, LOG_PAGE_SIZE=100, LOG_TOTAL=0;
+async function loadLogs(){
+  try{
+    const p=$('logProvider').value.trim(), s=$('logStatus').value.trim();
+    const m=$('logModel').value.trim(), k=$('logKey').value.trim();
+    let url='/api/logs?limit='+LOG_PAGE_SIZE+'&offset='+(LOG_PAGE*LOG_PAGE_SIZE);
+    if(p) url+='&provider='+encodeURIComponent(p);
+    if(s) url+='&status='+encodeURIComponent(s);
+    if(m) url+='&model='+encodeURIComponent(m);
+    if(k) url+='&key_id='+encodeURIComponent(k);
+    const f=$('logFrom').value, t=$('logTo').value;
+    if(f) url+='&ts_from='+(new Date(f+'T00:00:00').getTime());
+    if(t) url+='&ts_to='+(new Date(t+'T23:59:59').getTime());
+    const d=await api(url);
+    LOGS=d.logs; LOG_TOTAL=d.total||0;
+    const pages=Math.max(1,Math.ceil(LOG_TOTAL/LOG_PAGE_SIZE));
+    $('logsBody').innerHTML=d.logs.map(logRowHtml).join('')
+      || '<tr><td colspan="9" class="empty">暂无日志</td></tr>';
+    $('logsCards').innerHTML=d.logs.map(logCardHtml).join('')
+      || '<div class="empty">暂无日志</div>';
+    $('logTotal').textContent=`共 ${LOG_TOTAL} 条`;
+    $('logPage').textContent=`${LOG_PAGE+1}/${pages}`;
+    $('logPrev').disabled=LOG_PAGE<=0;
+    $('logNext').disabled=LOG_PAGE>=pages-1;
+    fadeIn($('logsBody')); fadeIn($('logsCards'));
+  }catch(e){ toast(e.message); }
+}
+$('logFilterBtn').onclick=()=>{ LOG_PAGE=0; loadLogs(); };
+$('logPrev').onclick=()=>{ if(LOG_PAGE>0){ LOG_PAGE--; loadLogs(); } };
+$('logNext').onclick=()=>{ LOG_PAGE++; loadLogs(); };
+$('logFrom').onchange=()=>{ LOG_PAGE=0; loadLogs(); };
+$('logTo').onchange=()=>{ LOG_PAGE=0; loadLogs(); };
+
+// ---------- 设置 ----------
+const LB_STRATEGIES=[
+  {id:'round_robin', name:'轮询', desc:'请求轮流分配给各 Key, 负载最均匀'},
+  {id:'weighted_round_robin', name:'加权轮询', desc:'按权重比例分配, 权重高的 Key 承担更多'},
+  {id:'priority', name:'优先级', desc:'优先使用优先级小(高)的 Key, 失败后降级'},
+  {id:'least_connections', name:'最少连接', desc:'选择当前并发请求最少的 Key'},
+  {id:'response_time', name:'响应时间', desc:'优先选择历史响应最快的 Key'},
+  {id:'smart', name:'智能', desc:'综合权重/响应/错误率自动选择'},
+];
+let STRATEGY='round_robin';
+function strategyMeta(id){
+  return LB_STRATEGIES.find(x=>x.id===id)||{id,name:id,desc:''};
+}
+function renderStrategyBtn(){
+  const m=strategyMeta(STRATEGY);
+  $('strategyName').textContent=m.name;
+}
+function openStrategyModal(){
+  $('strategyList').innerHTML=LB_STRATEGIES.map(x=>`
+    <button type="button" class="sheet-item ${x.id===STRATEGY?'sel':''}" onclick="pickStrategy('${x.id}')">
+      <span class="si-name">${x.name}<div class="si-desc">${x.desc}</div></span>
+      ${x.id===STRATEGY?'<svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="20 6 9 17 4 12"/></svg>':''}
+    </button>`).join('');
+  $('strategyModal').classList.add('open');
+}
+function closeStrategyModal(){ $('strategyModal').classList.remove('open'); }
+function pickStrategy(id){
+  STRATEGY=id;
+  renderStrategyBtn();
+  closeStrategyModal();
+  toast('策略已选择: '+strategyMeta(id).name+' (保存后生效)');
+}
+window.openStrategyModal=openStrategyModal;
+window.closeStrategyModal=closeStrategyModal;
+window.pickStrategy=pickStrategy;
+let TPM=true;
+function renderTpmBtn(){
+  $('tpmName').textContent = TPM?'开启':'关闭';
+}
+function openTpmModal(){
+  document.querySelectorAll('#tpmModal .sheet-item').forEach(it=>{
+    const sel = (it.dataset.tpm==='true')===TPM;
+    it.classList.toggle('sel', sel);
+    it.querySelector('.si-check').style.display = sel?'':'none';
+  });
+  $('tpmModal').classList.add('open');
+}
+function closeTpmModal(){ $('tpmModal').classList.remove('open'); }
+function pickTpm(v){
+  TPM=!!v;
+  renderTpmBtn();
+  closeTpmModal();
+  toast('自适应 TPM 已选择: '+(TPM?'开启':'关闭')+' (保存后生效)');
+}
+window.openTpmModal=openTpmModal;
+window.closeTpmModal=closeTpmModal;
+window.pickTpm=pickTpm;
+// ---------- 缓存开关(底部弹窗) ----------
+let CACHE_ENABLED=true;
+function renderCacheBtn(){
+  $('cacheName').textContent = CACHE_ENABLED?'开启':'关闭';
+}
+function openCacheModal(){
+  document.querySelectorAll('#cacheModal .sheet-item').forEach(it=>{
+    const sel = (it.dataset.cache==='true')===CACHE_ENABLED;
+    it.classList.toggle('sel', sel);
+    it.querySelector('.si-check').style.display = sel?'':'none';
+  });
+  $('cacheModal').classList.add('open');
+}
+function closeCacheModal(){ $('cacheModal').classList.remove('open'); }
+function pickCache(v){
+  CACHE_ENABLED=!!v;
+  renderCacheBtn();
+  closeCacheModal();
+  toast('缓存已选择: '+(CACHE_ENABLED?'开启':'关闭')+' (保存后生效)');
+}
+window.openCacheModal=openCacheModal;
+window.closeCacheModal=closeCacheModal;
+window.pickCache=pickCache;
+
+// 清空缓存
+async function clearCache(){
+  const btn=$('cacheClearBtn'), msg=$('cacheClearMsg');
+  if(btn) btn.disabled=true;
+  if(msg) msg.textContent='清理中...';
+  try{
+    const r=await api('/api/cache/clear',{method:'POST'});
+    if(msg) msg.textContent='已清空 '+r.cleared+' 条缓存';
+    toast('缓存已清空 ('+r.cleared+' 条)');
+    setTimeout(()=>{ if(msg) msg.textContent=''; }, 2500);
+  }catch(e){
+    if(msg) msg.textContent='清空失败: '+e.message;
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+}
+window.clearCache=clearCache;
+
+// ---------- 用量趋势曲线图 ----------
+let TREND_DAYS=7;
+async function loadTrend(days){
+  TREND_DAYS=days||TREND_DAYS;
+  // 按钮高亮同步
+  document.querySelectorAll('.trend-btn').forEach(b=>{
+    b.classList.toggle('primary', +b.dataset.days===TREND_DAYS);
+  });
+  try{
+    const d=await api('/api/trend?days='+TREND_DAYS);
+    $('trendChart').innerHTML=renderTrendSvg(d.series||[]);
+  }catch(e){ $('trendChart').innerHTML='<div class="empty">加载失败: '+esc(e.message)+'</div>'; }
+}
+// Catmull-Rom 转三次贝塞尔: 平滑曲线路径
+function smoothPath(pts){
+  if(pts.length<3) return 'M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');
+  let d='M'+pts[0][0].toFixed(1)+','+pts[0][1].toFixed(1);
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[Math.max(0,i-1)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(pts.length-1,i+2)];
+    const c1x=p1[0]+(p2[0]-p0[0])/6, c1y=p1[1]+(p2[1]-p0[1])/6;
+    const c2x=p2[0]-(p3[0]-p1[0])/6, c2y=p2[1]-(p3[1]-p1[1])/6;
+    d+=' C'+c1x.toFixed(1)+','+c1y.toFixed(1)+' '+c2x.toFixed(1)+','+c2y.toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1);
+  }
+  return d;
+}
+function renderTrendSvg(series){
+  if(!series.length) return '<div class="empty">暂无数据</div>';
+  const W=720, H=210, PAD=30;
+  const maxReq=Math.max(1,...series.map(s=>s.requests));
+  const maxTok=Math.max(1,...series.map(s=>s.tokens));
+  const n=series.length;
+  const x=i=>PAD+(W-PAD*2)*(n===1?0.5:i/(n-1));
+  const yReq=v=>H-PAD-(H-PAD*2)*(v/maxReq);
+  const yTok=v=>H-PAD-(H-PAD*2)*(v/maxTok);
+  const reqPts=series.map((s,i)=>[x(i),yReq(s.requests)]);
+  const tokPts=series.map((s,i)=>[x(i),yTok(s.tokens)]);
+  const reqPath=smoothPath(reqPts);
+  const tokPath=smoothPath(tokPts);
+  // 渐变填充(请求数面积)
+  const areaReq='M'+x(0).toFixed(1)+','+(H-PAD)+' L'+reqPts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')+' L'+x(n-1).toFixed(1)+','+(H-PAD)+' Z';
+  // 横轴刻度线(每格)
+  const grid=(()=>{ let g=''; for(let i=0;i<=4;i++){ const y=PAD+i*(H-PAD*2)/4; g+=`<line x1="${PAD}" y1="${y.toFixed(1)}" x2="${W-PAD}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.5" opacity="0.5"/>`; } return g; })();
+  const labels=series.map((s,i)=>{
+    const show=n>30?(i%Math.ceil(n/8)===0):(n>14?(i%2===0):true);
+    return show?`<text x="${x(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--muted)">${s.label}</text>`:'';
+  }).join('');
+  const reqDots=series.map((s,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${yReq(s.requests).toFixed(1)}" r="2.5" fill="var(--accent)" stroke="#0b0f1a" stroke-width="1"><title>${s.label} 请求 ${s.requests} · Token ${fmtNum(s.tokens)} · 费用 $${s.cost_usd}</title></circle>`).join('');
+  // 汇总: 区间总请求 / 总 token(万) / 日均
+  const totReq=series.reduce((a,s)=>a+s.requests,0);
+  const totTok=series.reduce((a,s)=>a+s.tokens,0);
+  const totCost=series.reduce((a,s)=>a+(+s.cost_usd||0),0);
+  const avg=Math.round(totReq/Math.max(1,n));
+  const sumRow=`<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:6px">
+    <span>区间请求 <b style="color:var(--text)">${fmtNum(totReq)}</b></span>
+    <span>Token <b style="color:var(--text)">${(totTok/10000).toFixed(2)}万</b></span>
+    <span>费用 <b style="color:var(--text)">$${totCost.toFixed(4)}</b></span>
+    <span>日均 <b style="color:var(--text)">${fmtNum(avg)}</b></span>
+  </div>`;
+  return `<div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" preserveAspectRatio="none">
+      <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--accent)" stop-opacity="0.25"/>
+        <stop offset="1" stop-color="var(--accent)" stop-opacity="0.02"/>
+      </linearGradient></defs>
+      ${grid}
+      <path d="${areaReq}" fill="url(#trendFill)"></path>
+      <path d="${reqPath}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+      <path d="${tokPath}" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 4" stroke-linecap="round"/>
+      ${reqDots}${labels}
+    </svg>${sumRow}
+  </div>`;
+}
+window.loadTrend=loadTrend;
+window.renderTrendSvg=renderTrendSvg;
+
+// ---------- 接入引导 ----------
+function clientTemplate(kind){
+  const lb=GW_IPS.loopback||'127.0.0.1';
+  const base=`http://${lb}:${GW_PORT}/v1`;
+  const key=GW_KEY||'<你的网关Key>';
+  if(kind==='chatbox'){
+    return ['ChatBox 自定义提供方配置:', '', `Base URL: ${base}`, `API Key: ${key}`, '', '模型: 从模型页查看可用模型 id', '方式: OpenAI API 兼容'].join('\n');
+  }
+  if(kind==='nextchat'){
+    return ['NextChat 配置:', '', `接口地址: ${base}`, `密钥: ${key}`, '', '模型: deepseek-v4-flash 等(模型页可查)', '方式: OpenAI API 兼容'].join('\n');
+  }
+  return ['Open WebUI 配置(环境变量):', '', `OPENAI_API_BASE_URL=${base}`, `OPENAI_API_KEY=${key}`, '', '模型白名单: 见导出的模型列表'].join('\n');
+}
+function copyClientTemplate(kind){
+  copyText(clientTemplate(kind));
+}
+async function exportModelsJson(){
+  try{
+    const d=await api('/api/models');
+    const data={app:'InterGate', exported_at:new Date().toISOString(),
+                base_url:`http://${GW_IPS.loopback||'127.0.0.1'}:${GW_PORT}/v1`,
+                models:d.models.map(m=>({id:m.id,name:m.name||m.id,
+                  source:m.source,source_keys:m.source_keys||[],
+                  capabilities:m.capabilities||[],enabled:m.enabled!==false}))};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='intergate-models.json'; a.click();
+    URL.revokeObjectURL(a.href);
+  }catch(e){ toast('导出失败: '+e.message); }
+}
+window.copyClientTemplate=copyClientTemplate; window.exportModelsJson=exportModelsJson;
+
+// ---------- 上游健康探测 ----------
+async function probeHealth(){
+  const btn=document.querySelector('[onclick="probeHealth()"]');
+  if(btn){ btn.disabled=true; btn.textContent='探测中...'; }
+  try{
+    const d=await api('/api/health');
+    const s=d.summary||{};
+    $('healthSummary').textContent=`${s.total} 个 Key · 正常 ${s.ok} · 异常 ${s.failed} · 平均延迟 ${s.avg_latency_ms}ms`;
+    $('healthList').innerHTML=(d.results||[]).map(r=>
+      `<div class="row" style="justify-content:flex-start;gap:10px;padding:7px 4px;border-bottom:1px solid var(--border)">
+        <span class="tag ${r.ok?'green':'red'}">${r.ok?'正常':'异常'}</span>
+        <span>${esc(r.name||r.provider)}</span>
+        <span class="muted" style="font-size:11px">${esc(r.provider)}</span>
+        <span class="muted" style="font-size:11px;margin-left:auto">${r.ok?(r.latency_ms+'ms'):esc(r.error)}</span>
+      </div>`).join('')||'<div class="empty">无 Key</div>';
+  }catch(e){ $('healthList').innerHTML='<div class="empty">探测失败: '+esc(e.message)+'</div>'; }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='探测'; } }
+}
+window.probeHealth=probeHealth;
+
+// ---------- 数据备份 / 导出 ----------
+async function makeBackup(){
+  try{
+    const r=await api('/api/backup',{method:'POST'});
+    if(!r.ok){ $('backupList').textContent='备份失败: '+(r.error||r.message||''); return; }
+    $('backupList').innerHTML=(r.files||[]).slice(0,5).map(f=>
+      `<div class="row" style="justify-content:flex-start;gap:8px">
+        <a href="/api/backup/download?name=${encodeURIComponent(f.name)}" download>${esc(f.name)}</a>
+        <span>${(f.size/1024).toFixed(1)} KB</span>
+      </div>`).join('');
+  }catch(e){ $('backupList').textContent='备份失败: '+e.message; }
+}
+function exportCsv(which){
+  window.location.href='/api/export/'+which;
+}
+window.makeBackup=makeBackup; window.exportCsv=exportCsv;
+
+// ---------- 附加网关密钥(底部弹窗) ----------
+let GW_KEYS=[];
+function openGwKeysModal(){ $('gwKeysModal').classList.add('open'); }
+function closeGwKeysModal(){ $('gwKeysModal').classList.remove('open'); }
+window.openGwKeysModal=openGwKeysModal; window.closeGwKeysModal=closeGwKeysModal;
+// 待添加密钥的权限(底部弹窗选择)
+let GW_KEY_PERM='full';
+const GW_PERM_NAMES={full:'全部',readonly:'只读',models:'限定模型'};
+function openGwKeyPermModal(){
+  document.querySelectorAll('#gwKeyPermModal .sheet-item').forEach(it=>{
+    const sel=it.dataset.gwperm===GW_KEY_PERM;
+    it.classList.toggle('sel',sel);
+    it.querySelector('.si-check').style.display=sel?'':'none';
+  });
+  $('gwKeyPermModal').classList.add('open');
+}
+function closeGwKeyPermModal(){ $('gwKeyPermModal').classList.remove('open'); }
+function pickGwKeyPerm(p){
+  GW_KEY_PERM=p;
+  $('gwKeyPermLabel').textContent=GW_PERM_NAMES[p];
+  $('gwKeyModels').style.display=p==='models'?'':'none';
+  closeGwKeyPermModal();
+}
+window.openGwKeyPermModal=openGwKeyPermModal;
+window.closeGwKeyPermModal=closeGwKeyPermModal;
+window.pickGwKeyPerm=pickGwKeyPerm;
+async function loadGwKeys(){
+  try{
+    const d=await api('/api/gateway-keys'); GW_KEYS=d.keys||[]; renderGwKeys();
+    const lb=$('gwKeysBtnLabel'); if(lb) lb.textContent=GW_KEYS.length?GW_KEYS.length+' 个':'管理';
+  }
+  catch(e){}
+}
+function renderGwKeys(){
+  $('gwKeyList').innerHTML=GW_KEYS.map((k,i)=>`
+    <div class="row" style="gap:8px;justify-content:flex-start;padding:6px 0;border-bottom:1px solid var(--row-border)">
+      <button class="switch ${k.enabled?'on':''}" onclick="toggleGwKey(${i})" title="启用/停用"></button>
+      <span style="font-family:monospace;font-size:12px">${esc(k.key_masked)}</span>
+      <span class="tag">${k.permission==='full'?'全部':k.permission==='readonly'?'只读':'限定'}</span>
+      ${k.models&&k.models.length?`<span class="muted" style="font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k.models.join(','))}</span>`:''}
+      <span class="muted" style="font-size:11px">${esc(k.name||'')}</span>
+      <button class="btn sm danger" style="margin-left:auto" onclick="delGwKey(${i})">删</button>
+    </div>`).join('')||'<div class="muted" style="padding:4px 0">暂无附加密钥</div>';
+}
+function addGwKey(){
+  const key=$('gwKeyNew').value.trim();
+  if(!key){ alert('请输入密钥'); return; }
+  const perm=GW_KEY_PERM;
+  const models=$('gwKeyModels').value.split(',').map(s=>s.trim()).filter(Boolean);
+  GW_KEYS.push({key, key_masked:key.length>8?key.slice(0,4)+'••••'+key.slice(-4):'••••', name:'', permission:perm, models:perm==='models'?models:[], enabled:true, note:''});
+  $('gwKeyNew').value=''; $('gwKeyModels').value=''; renderGwKeys();
+}
+function toggleGwKey(i){ GW_KEYS[i].enabled=!GW_KEYS[i].enabled; renderGwKeys(); }
+function delGwKey(i){ GW_KEYS.splice(i,1); renderGwKeys(); }
+async function saveGwKeys(){
+  try{
+    const r=await api('/api/gateway-keys',{method:'PUT',body:JSON.stringify({keys:GW_KEYS})});
+    await loadGwKeys(); return r.count;
+  }catch(e){ throw e; }
+}
+window.addGwKey=addGwKey; window.toggleGwKey=toggleGwKey; window.delGwKey=delGwKey;
+
+// ---------- 告警 Webhook ----------
+let WH_ENABLED=false;
+function toggleWebhook(){ WH_ENABLED=!WH_ENABLED; $('whSwitch').classList.toggle('on',WH_ENABLED); }
+async function testWebhook(){
+  const url=$('whUrl').value.trim();
+  if(!url){ $('whMsg').textContent='请先填写 Webhook 地址'; return; }
+  try{
+    const r=await api('/api/webhook/test',{method:'POST',body:JSON.stringify({url,secret:$('whSecret').value})});
+    $('whMsg').textContent=r.ok?'推送成功':'推送失败: '+(r.error||'');
+  }catch(e){ $('whMsg').textContent='测试失败: '+e.message; }
+}
+window.toggleWebhook=toggleWebhook; window.testWebhook=testWebhook;
+
+// ---------- 价格表 ----------
+let PRICING_RULES={};
+let BUILTIN_PRICING={};
+function openBuiltinPricingModal(){
+  $('builtinPricing').innerHTML=renderBuiltinPricing(BUILTIN_PRICING);
+  $('builtinPricingModal').classList.add('open');
+}
+function closeBuiltinPricingModal(){ $('builtinPricingModal').classList.remove('open'); }
+window.openBuiltinPricingModal=openBuiltinPricingModal;
+window.closeBuiltinPricingModal=closeBuiltinPricingModal;
+async function loadPricing(){
+  try{
+    const d=await api('/api/pricing');
+    PRICING_RULES=d.rules||{};
+    const rows=Object.entries(PRICING_RULES).map(([p,[i,o]])=>
+      `<div class="row" style="gap:8px;margin-bottom:6px">
+        <input value="${esc(p)}" placeholder="前缀" style="flex:1" onchange="editPriceKey('${esc(p)}',this)">
+        <input type="number" step="0.01" value="${i}" style="width:90px" onchange="editPriceVal('${esc(p)}','in',this.value)">
+        <input type="number" step="0.01" value="${o}" style="width:90px" onchange="editPriceVal('${esc(p)}','out',this.value)">
+        <button class="btn sm" onclick="delPrice('${esc(p)}')">删</button>
+      </div>`).join('');
+    $('pricingList').innerHTML=rows||'<div class="muted" style="padding:6px">暂无自定义规则, 使用内置价格</div>';
+    BUILTIN_PRICING=d.builtin||{};
+    const n=Object.keys(BUILTIN_PRICING).length;
+    const lb=$('builtinPricingBtnLabel');
+    if(lb) lb.textContent=n?n+' 条':'查看';
+  }catch(e){ $('pricingList').innerHTML='<div class="muted">加载失败: '+esc(e.message)+'</div>'; }
+}
+// 内置价格按厂商分组渲染
+function renderBuiltinPricing(builtin){
+  const groups=[
+    ['DeepSeek',['deepseek-chat','deepseek-reasoner','deepseek-r1','deepseek']],
+    ['智谱 GLM',['glm-4.6','glm-4.5','glm-4-plus','glm-4-air','glm-4-flash','glm-4-long','glm']],
+    ['阿里通义千问',['qwen-max','qwen-plus','qwen-turbo','qwen-long','qwen']],
+    ['月之暗面 Kimi',['kimi-k2','kimi','moonshot']],
+    ['字节豆包',['doubao-1.5','doubao-seed','doubao-pro','doubao']],
+    ['讯飞星火',['spark-max','spark-pro','spark-lite','spark']],
+    ['百度文心',['ernie-4','ernie-3.5','ernie-speed','ernie']],
+    ['腾讯混元',['hunyuan-turbo','hunyuan-lite','hunyuan']],
+    ['商汤/其他国产',['sensenova','minimax','step','yi','baichuan','minicpm']],
+    ['OpenAI GPT/o',['gpt-5-mini','gpt-5-nano','gpt-5','gpt-4.1-mini','gpt-4.1-nano','gpt-4.1','gpt-4o-mini','gpt-4o','gpt-4-turbo','gpt-4','gpt-3.5','gpt','o1-mini','o1','o3-mini','o3','o4-mini']],
+    ['Anthropic Claude',['claude-3-opus','claude-3-5-haiku','claude-3-haiku','claude-opus','claude-sonnet','claude-haiku','claude']],
+    ['Google Gemini',['gemini-3-pro','gemini-3-flash','gemini-2.5-pro','gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash','gemini-1.5-flash','gemini']],
+    ['Meta Llama',['llama-4-maverick','llama-4-scout','llama-3.3','llama-3.1-405b','llama-3.1-70b','llama-3.1-8b','llama']],
+    ['xAI Grok',['grok-3-mini','grok-3','grok-2','grok']],
+    ['Mistral',['mistral-large','mistral-medium','mistral-small','codestral','ministral','mistral']],
+    ['Amazon Nova',['nova-pro','nova-lite','nova-micro','nova']],
+  ];
+  return groups.map(g=>{
+    const rows=g[1].filter(k=>builtin[k]).map(k=>{
+      const [i,o]=builtin[k];
+      return `<tr><td style="padding:2px 10px 2px 0;font-family:monospace;font-size:11px;color:var(--text)">${esc(k)}</td><td style="padding:2px 12px 2px 0;text-align:right;font-size:11px">$${i}</td><td style="padding:2px 0;text-align:right;font-size:11px">$${o}</td></tr>`;
+    }).join('');
+    return `<div style="margin-bottom:8px">
+      <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:2px">${g[0]}</div>
+      <table style="border-collapse:collapse;width:100%"><tbody>${rows}</tbody></table>
+    </div>`;
+  }).join('');
+}
+function editPriceKey(oldKey, el){
+  const v=el.value.trim(); if(!v||v===oldKey) return;
+  if(PRICING_RULES[v]){ alert('前缀已存在'); el.value=oldKey; return; }
+  PRICING_RULES[v]=PRICING_RULES[oldKey]; delete PRICING_RULES[oldKey];
+}
+function editPriceVal(key, which, val){
+  const n=parseFloat(val); if(isNaN(n)) return;
+  PRICING_RULES[key]=PRICING_RULES[key]||[0,0];
+  PRICING_RULES[key][which==='in'?0:1]=n;
+}
+function addPriceRow(){
+  const p=$('pricePrefix').value.trim(); const i=parseFloat($('priceIn').value); const o=parseFloat($('priceOut').value);
+  if(!p||isNaN(i)||isNaN(o)){ alert('请填写完整的前缀与价格'); return; }
+  PRICING_RULES[p]=[i,o]; $('pricePrefix').value=''; $('priceIn').value=''; $('priceOut').value='';
+  loadPricing();
+}
+function delPrice(key){ delete PRICING_RULES[key]; loadPricing(); }
+async function savePricing(){
+  try{
+    const r=await api('/api/pricing',{method:'PUT',body:JSON.stringify({rules:PRICING_RULES})});
+    $('pricingMsg').textContent='已保存 '+Object.keys(r.rules).length+' 条规则';
+    setTimeout(()=>$('pricingMsg').textContent='',3000);
+  }catch(e){ $('pricingMsg').textContent='保存失败: '+e.message; }
+}
+window.addPriceRow=addPriceRow; window.savePricing=savePricing;
+window.delPrice=delPrice; window.editPriceKey=editPriceKey; window.editPriceVal=editPriceVal;
+
+async function loadSettings(){
+  try{
+    const s=await api('/api/settings');
+    $('set-port').value=s.port; $('set-gatewayKey').value=s.gateway_key||'';
+    GW_KEY=s.gateway_key||''; GW_AUTH=!!s.gateway_key_enabled;
+    syncGwKeyAuthUI();
+    STRATEGY=s.load_balance_strategy||'round_robin'; renderStrategyBtn();
+    $('set-logDays').value=s.log_retention_days;
+    CACHE_ENABLED=!!s.cache_enabled; renderCacheBtn();
+    $('set-cacheTtl').value=s.cache_ttl_seconds;
+    $('set-cacheMax').value=s.cache_max_entries; $('set-ipRpm').value=s.ip_rate_limit_per_minute;
+    $('set-globalRpm').value=s.global_rpm_limit; TPM=!!s.adaptive_tpm_enabled; renderTpmBtn();
+    SYNC_AUTO=!!s.sync_enabled; $('set-syncInterval').value=s.sync_interval_minutes||60; syncSyncUI();
+    $('set-webPwd').value=s.web_password||''; $('set-quotaWarn').value=s.quota_warn_threshold;
+    $('set-workers').value=s.workers||1;
+    $('set-upstreamMaxConn').value=s.upstream_max_connections||100;
+    $('set-upstreamKeepalive').value=s.upstream_max_keepalive||20;
+    $('whUrl').value=s.webhook_url||''; $('whSecret').value=s.webhook_secret||'';
+    loadGwKeys();
+    $('whSwitch').classList.toggle('on', !!s.webhook_enabled);
+  }catch(e){ toast(e.message); }
+}
+$('saveSettings').onclick=async()=>{
+  const body={
+    port:+$('set-port').value,
+    // gateway_key 不随保存提交: 避免误清空, 仅通过开关操作更新
+    load_balance_strategy:STRATEGY, log_retention_days:+$('set-logDays').value,
+    cache_enabled:CACHE_ENABLED, cache_ttl_seconds:+$('set-cacheTtl').value,
+    cache_max_entries:+$('set-cacheMax').value, ip_rate_limit_per_minute:+$('set-ipRpm').value,
+    global_rpm_limit:+$('set-globalRpm').value, adaptive_tpm_enabled:TPM,
+    sync_enabled:SYNC_AUTO, sync_interval_minutes:Math.max(1, +($('set-syncInterval').value)||60),
+    web_password:$('set-webPwd').value, quota_warn_threshold:+$('set-quotaWarn').value,
+    webhook_url:$('whUrl').value.trim(), webhook_secret:$('whSecret').value,
+    webhook_enabled:$('whSwitch').classList.contains('on'),
+    workers:+$('set-workers').value||1,
+    upstream_max_connections:+$('set-upstreamMaxConn').value||100,
+    upstream_max_keepalive:+$('set-upstreamKeepalive').value||20,
+  };
+  try{ await saveGwKeys(); }catch(e){}
+  try{
+    const r=await api('/api/settings',{method:'PUT',body:JSON.stringify(body)});
+    // 不随保存改 gateway_key: GW_KEY/GW_AUTH 维持原状
+    syncGwKeyAuthUI();
+    $('setSaveMsg').textContent='已保存';
+    setTimeout(()=>$('setSaveMsg').textContent='',3000);
+    // 检测是否需要重启
+    if(r.needs_restart){
+      const hint=$('restartHint');
+      const fields=$('restartFields');
+      const items=Object.entries(r.restart_fields||{}).map(([k,v])=>
+        `${k}: ${JSON.stringify(v.old)} → ${JSON.stringify(v.new)}`).join(' · ');
+      fields.textContent=items||'部分设置';
+      hint.style.display='block';
+    }else{
+      $('restartHint').style.display='none';
+    }
+  }catch(e){ toast(e.message); }
+};
+
+// ---------- 重启 ----------
+$('restartBtn').onclick=async()=>{
+  if(!confirm('确认立即重启 InterGate 服务?重启期间请求将暂时中断.')) return;
+  const btn=$('restartBtn');
+  btn.disabled=true; btn.textContent='重启中...';
+  try{
+    const r=await api('/api/restart',{method:'POST'});
+    toast('服务正在重启, 请稍后刷新页面');
+    setTimeout(()=>{
+      location.reload();
+    }, 3000);
+  }catch(e){
+    btn.disabled=false; btn.textContent='立即重启';
+    toast('重启请求失败: '+e.message+' (可手动重启)');
+  }
+};
+$('dismissRestart').onclick=()=>$('restartHint').style.display='none';
+
+// ---------- 登录 ----------
+function showLogin(){
+  // 收到 401 即代表需要登录(设置了管理密码),直接弹出登录框
+  $('loginOverlay').style.display='flex';
+  setTimeout(()=>$('loginPwd').focus(), 50);
+}
+$('loginBtn').onclick=async()=>{
+  try{ const r=await api('/api/login',{method:'POST',body:JSON.stringify({password:$('loginPwd').value})});
+    localStorage.setItem('ig_token',r.token); $('loginOverlay').style.display='none';
+    toast('欢迎回来'); init(); }catch(e){ toast(e.message); }
+};
+
+// ---------- 导航 ----------
+document.querySelectorAll('nav button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); $('page-'+b.dataset.page).classList.add('active');
+    if(b.dataset.page==='keys') loadKeys();
+    if(b.dataset.page==='models') loadModels();
+    if(b.dataset.page==='logs') loadLogs();
+    if(b.dataset.page==='settings') loadSettings();
+  };
+});
+
+// ---------- 初始化 ----------
+async function init(){
+  try{
+    await loadStatus();
+    await loadProviders();
+    loadRoutes(); loadKeys(); loadModels(); loadLogs(); loadSettings(); loadPricing();
+    loadTrend(7);
+    setInterval(()=>{ if(document.hidden) return; loadStatus(); }, 15000);
+  }catch(e){ if(e.message==='unauthorized') showLogin(); }
+}
+init();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
