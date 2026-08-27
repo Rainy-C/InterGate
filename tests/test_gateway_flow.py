@@ -210,6 +210,10 @@ def test_management_endpoints():
     check("stats", r.status_code == 200 and "active_keys" in r.json())
     r = c.get("/relay/report", headers=h)
     check("report", r.status_code == 200 and "summary" in r.json())
+    r = c.get("/relay/metrics", headers=h)
+    check("metrics", r.status_code == 200
+          and "intergate_keys_total" in r.text
+          and "text/plain" in r.headers.get("content-type", ""))
 
 
 def test_no_available_key():

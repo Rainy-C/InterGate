@@ -25,6 +25,7 @@
   --toast-bg:#1c2a4a; --overlay:rgba(0,0,0,.6);
   --shadow:0 8px 24px rgba(0,0,0,.4);
   --radius:12px;
+  --nav-bg:rgba(18,24,41,.92);
 }
 /* 浅色(跟随系统时自动) */
 @media (prefers-color-scheme: light){
@@ -38,6 +39,7 @@
     --danger-border:#fecaca; --accent-soft:rgba(59,108,246,.1);
     --toast-bg:#ffffff; --overlay:rgba(15,23,42,.45);
     --shadow:0 8px 24px rgba(15,23,42,.12);
+  --nav-bg:rgba(255,255,255,.9);
   }
 }
 /* 浅色(手动选择) */
@@ -51,6 +53,7 @@
   --danger-border:#fecaca; --accent-soft:rgba(59,108,246,.1);
   --toast-bg:#ffffff; --overlay:rgba(15,23,42,.45);
   --shadow:0 8px 24px rgba(15,23,42,.12);
+  --nav-bg:rgba(255,255,255,.9);
 }
 /* 深色(手动选择) */
 :root[data-theme="dark"]{
@@ -63,9 +66,77 @@
   --danger-border:#3a2430; --accent-soft:rgba(79,124,255,.08);
   --toast-bg:#1c2a4a; --overlay:rgba(0,0,0,.6);
   --shadow:0 8px 24px rgba(0,0,0,.4);
+  --nav-bg:rgba(18,24,41,.92);
+}
+/* 仿 iOS 液态玻璃(手动选择): 半透明面板 + 高斯模糊, 彩色光晕背景 */
+:root[data-theme="glass"]{
+  --bg:#c7d6f2;
+  --panel:rgba(255,255,255,.42); --panel2:rgba(255,255,255,.26); --border:rgba(255,255,255,.55);
+  --text:#141b2e; --muted:#4f5b78; --accent:#2f6bff; --accent2:#a855f7;
+  --green:#0ea371; --red:#ef4444; --yellow:#d97706; --orange:#ea580c;
+  --row-border:rgba(255,255,255,.35); --row-hover:rgba(255,255,255,.3); --chip:rgba(255,255,255,.4);
+  --chip-green:rgba(16,185,129,.18); --chip-red:rgba(239,68,68,.16);
+  --chip-yellow:rgba(217,119,6,.18); --chip-gray:rgba(120,130,160,.18);
+  --badge-bg:rgba(255,255,255,.4); --switch-off:rgba(120,130,160,.4); --switch-knob:#ffffff;
+  --danger-border:rgba(239,68,68,.4); --accent-soft:rgba(47,107,255,.14);
+  --toast-bg:rgba(255,255,255,.6); --overlay:rgba(20,30,60,.35);
+  --shadow:0 8px 32px rgba(31,45,80,.18);
+  --radius:16px;
+  --nav-bg:rgba(255,255,255,.38);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,"PingFang SC","Noto Sans CJK SC",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+/* ===== 液态玻璃主题专属样式 ===== */
+/* 彩色光晕背景(固定于视口, 营造玻璃后景的通透感) */
+:root[data-theme="glass"] body{
+  background:
+    radial-gradient(1100px 800px at 12% -6%, rgba(120,170,255,.85), transparent 60%),
+    radial-gradient(900px 700px at 100% 8%, rgba(190,140,255,.75), transparent 58%),
+    radial-gradient(1000px 800px at 50% 108%, rgba(120,230,210,.6), transparent 60%),
+    linear-gradient(160deg,#dbe6ff 0%,#e7dcff 48%,#d6f3ec 100%);
+  background-attachment:fixed;
+}
+/* 半透明面板统一加高斯模糊 + 内高光, 呈现玻璃质感 */
+:root[data-theme="glass"] .topbar,
+:root[data-theme="glass"] nav,
+:root[data-theme="glass"] .card,
+:root[data-theme="glass"] .stat,
+:root[data-theme="glass"] .kg,
+:root[data-theme="glass"] .modal .box,
+:root[data-theme="glass"] .login-box,
+:root[data-theme="glass"] .kmenu,
+:root[data-theme="glass"] .sheet-item,
+:root[data-theme="glass"] .picker-btn,
+:root[data-theme="glass"] .btn,
+:root[data-theme="glass"] input,
+:root[data-theme="glass"] select,
+:root[data-theme="glass"] textarea,
+:root[data-theme="glass"] .toast{
+  -webkit-backdrop-filter:blur(18px) saturate(180%);
+  backdrop-filter:blur(18px) saturate(180%);
+}
+:root[data-theme="glass"] .card,
+:root[data-theme="glass"] .stat,
+:root[data-theme="glass"] .modal .box,
+:root[data-theme="glass"] .login-box{
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.6);
+}
+:root[data-theme="glass"] .topbar{
+  background:rgba(255,255,255,.32);
+  border-color:rgba(255,255,255,.5);
+}
+/* 悬浮胶囊 nav: 用 --nav-bg 高透毛玻璃, 保持胶囊高亮效果 */
+:root[data-theme="glass"] nav{
+  background:var(--nav-bg, rgba(255,255,255,.38));
+  border-color:rgba(255,255,255,.55);
+  box-shadow:0 10px 32px rgba(31,45,80,.2), inset 0 1px 0 rgba(255,255,255,.45);
+}
+/* 玻璃下的 primary 按钮保留渐变但半透明化, 融入背景 */
+:root[data-theme="glass"] .btn.primary{
+  box-shadow:0 4px 16px rgba(47,107,255,.35), inset 0 1px 0 rgba(255,255,255,.4);
+}
+/* 表格分隔线/悬停在玻璃下更柔和 */
+:root[data-theme="glass"] .kitem{border-bottom-color:rgba(255,255,255,.32)}
 a{color:var(--accent);text-decoration:none}
 .topbar{display:flex;align-items:center;gap:14px;padding:12px 22px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
@@ -86,6 +157,32 @@ a{color:var(--accent);text-decoration:none}
 .group-head td{background:var(--panel2);padding:8px 10px;border-bottom:1px solid var(--border)}
 .group-head + tr td{border-top:none}
 .mc-group{display:flex;flex-direction:column;gap:6px}
+/* ===== Key 管理紧凑聚合 ===== */
+.kg{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;background:var(--panel2)}
+.kg-hd{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel2);border-bottom:1px solid var(--border)}
+.kg-hd .tag{flex:none}
+.kg-hd .u{flex:1;min-width:0;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kg-hd .n{flex:none;font-size:11px;color:var(--muted)}
+.kg-hd .act{flex:none;display:flex;gap:4px}
+.kg-add{width:26px;height:26px;padding:0;border-radius:7px;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.kitem{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--row-border)}
+.kitem:last-child{border-bottom:none}
+.kitem .kdot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--muted)}
+.kitem .kdot.active{background:var(--green)}
+.kitem .kdot.inactive{background:var(--switch-off)}
+.kitem .kdot.error{background:var(--yellow)}
+.kitem .kdot.exhausted{background:var(--red)}
+.kitem .kmain{flex:1;min-width:0}
+.kitem .kname{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kitem .ksub{font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;margin-top:1px}
+.kitem .ksw{flex:none}
+.kitem .kmore{flex:none;position:relative}
+.kmenu-btn{width:26px;height:26px;padding:0;border-radius:7px;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.kmenu{position:fixed;z-index:9999;background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);min-width:110px;display:none;overflow:hidden}
+.kmenu.open{display:block}
+.kmenu button{display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer}
+.kmenu button:hover{background:var(--panel2)}
+.kmenu button.danger{color:var(--red)}
 .mc-group .gh{padding:4px 2px}
 /* switch 开关(紧凑) */
 .switch{position:relative;width:38px;height:22px;border-radius:11px;background:var(--switch-off);border:1px solid var(--border);cursor:pointer;transition:.18s;flex-shrink:0;padding:0}
@@ -126,6 +223,17 @@ tr.clickable{cursor:pointer}
 .tag.red{background:var(--chip-red);color:var(--red)}
 .tag.yellow{background:var(--chip-yellow);color:var(--yellow)}
 .tag.gray{background:var(--chip-gray);color:var(--muted)}
+.caps{display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center}
+.cap{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:5px;font-size:11px;font-weight:700;line-height:1;cursor:default;flex:none}
+.cap.c-chat{background:var(--chip);color:var(--accent)}
+.cap.c-vision{background:var(--chip-green);color:var(--green)}
+.cap.c-reason{background:var(--chip-yellow);color:var(--yellow)}
+.cap.c-tools{background:var(--chip-gray);color:var(--muted)}
+.cap.c-embedding{background:var(--chip);color:var(--accent2,#8b5cf6)}
+.cap.c-image{background:var(--chip-green);color:var(--green)}
+.cap.c-audio{background:var(--chip-yellow);color:var(--yellow)}
+.cap.c-tts{background:var(--chip-red);color:var(--red)}
+.cap.c-other{background:var(--chip-gray);color:var(--muted)}
 input,select,textarea{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;width:100%;outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
@@ -167,12 +275,14 @@ label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
 @media (max-width:768px){.dl .k{width:76px}}
 /* 密钥显示/隐藏开关 */
 .pwd-wrap{position:relative}
-.pwd-wrap input{padding-right:48px}
-.pwd-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--panel2);border:1px solid var(--border);color:var(--muted);cursor:pointer;padding:6px 8px;display:flex;align-items:center;justify-content:center;border-radius:8px;line-height:0;transition:.15s}
+.pwd-wrap input{padding-right:52px}
+/* 眼睛按钮: 固定尺寸, 垂直居中, 严格限制在输入框内部, 不超出边界 */
+.pwd-eye{position:absolute;right:5px;top:5px;bottom:5px;width:32px;padding:0;background:var(--panel2);border:1px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:7px;line-height:0;transition:.15s}
 .pwd-eye:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
-.pwd-eye:active{transform:translateY(-50%) scale(.94)}
-.pwd-eye svg{width:18px;height:18px;stroke:currentColor}
-@media (max-width:768px){.pwd-eye{padding:8px 10px}.pwd-eye svg{width:20px;height:20px}}
+.pwd-eye:active{transform:scale(.92)}
+.pwd-eye svg{width:18px;height:18px;stroke:currentColor;flex:none}
+/* 玻璃主题下也保持按钮在输入框内 */
+:root[data-theme="glass"] .pwd-eye{background:rgba(255,255,255,.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--toast-bg);border:1px solid var(--border);padding:10px 18px;border-radius:10px;font-size:13px;z-index:200;display:none;box-shadow:var(--shadow)}
 .toast.show{display:block}
 .progress{width:70px;height:5px;border-radius:3px;background:var(--chip);overflow:hidden}
@@ -220,9 +330,16 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
 .mc-ops .btn{flex:1;min-height:40px;white-space:nowrap}
 /* 使用方式地址卡片 */
 .addr-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
-.addr-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* date 输入: 未选择(无 has-value)时隐藏内部 mm/dd/yyyy 占位文字, 减 UI 臃肿;
+   聚焦或已选日期时正常显示。用 JS 的 has-value class 判断是否有值。 */
+input[type=date].date-input::-webkit-datetime-edit{color:transparent}
+input[type=date].date-input:focus::-webkit-datetime-edit,
+input[type=date].date-input.has-value::-webkit-datetime-edit{color:var(--text)}
+input[type=date].date-input::-webkit-calendar-picker-indicator{opacity:.5}
+.client-tpl-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.addr-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;overflow:hidden}
 .addr-tag{flex-shrink:0;font-size:11px;color:var(--muted);background:var(--chip);padding:2px 8px;border-radius:10px}
-.addr-code{flex:0 1 auto;min-width:0;font-size:12px;white-space:nowrap;cursor:pointer;user-select:all}
+.addr-code{flex:1 1 0;min-width:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:all}
 .addr-row .btn{flex-shrink:0}
 /* ========== Android 移动端适配 (≤768px) ========== */
 @media (max-width:768px){
@@ -233,16 +350,19 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
   .topbar .btn{padding:7px 10px;min-height:40px}
   /* 顶栏精简: 开关/同步已移入内容区 */
   #toggleGw,#syncBtn{display:none}
-  /* 底部固定导航 */
-  nav{position:fixed;bottom:0;left:0;right:0;top:auto;padding:0;
-      border-top:1px solid var(--border);border-bottom:none;overflow-x:visible;
-      z-index:90;padding-bottom:env(safe-area-inset-bottom);
-      background:var(--panel)}
+  /* 底部悬浮胶囊导航 */
+  nav{position:fixed;left:14px;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));
+      top:auto;padding:6px;border:1px solid var(--border);border-top:none;
+      overflow-x:visible;z-index:90;border-radius:20px;
+      background:var(--nav-bg,var(--panel));
+      box-shadow:0 10px 30px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.12);
+      -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
   nav button{flex:1;display:flex;align-items:center;justify-content:center;
-             padding:4px 2px;font-size:13px;min-height:56px;
-             border-bottom:none;border-top:2px solid transparent;color:var(--muted)}
-  nav button.active{color:var(--text);border-bottom:none;border-top-color:var(--accent);font-weight:600}
-  main{padding:12px;padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+             padding:4px 2px;font-size:13px;min-height:46px;border-radius:14px;
+             border:none;border-bottom:none;color:var(--muted);transition:.18s}
+  nav button.active{color:var(--text);background:var(--accent-soft);font-weight:600;
+                    box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+  main{padding:12px;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
   .card{padding:14px;margin-bottom:12px}
   .cards{grid-template-columns:repeat(2,1fr);gap:10px}
   .stat{padding:12px}
@@ -335,9 +455,9 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
       <div class="row mb" style="justify-content:space-between;align-items:center">
         <h2 style="margin:0">用量趋势</h2>
         <span class="row" style="gap:6px">
-          <button class="btn sm trend-btn primary" data-days="7" onclick="loadTrend(7)">7日</button>
-          <button class="btn sm trend-btn" data-days="30" onclick="loadTrend(30)">30日</button>
-          <button class="btn sm trend-btn" data-days="90" onclick="loadTrend(90)">90日</button>
+          <button class="btn sm trend-btn" data-period="24h" onclick="loadTrend('24h')">24小时</button>
+          <button class="btn sm trend-btn primary" data-period="7d" onclick="loadTrend('7d')">7日</button>
+          <button class="btn sm trend-btn" data-period="30d" onclick="loadTrend('30d')">1月</button>
         </span>
       </div>
       <div id="trendChart" class="chart-bar" style="padding-top:6px"><div class="empty" style="padding:14px">加载中...</div></div>
@@ -368,17 +488,9 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
       <button class="btn sm" id="testAllBtn">批量测试</button>
       <button class="btn primary" id="addKeyBtn">+ 添加 Key</button>
     </div>
-    <div class="card" style="padding:8px">
-      <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>名称</th><th>提供商</th><th>Key</th><th>状态</th><th>优先级</th><th>权重</th>
-          <th>今日用量</th><th>配额</th><th>错误率</th><th>操作</th>
-        </tr></thead>
-        <tbody id="keysBody"></tbody>
-      </table>
-      </div>
-      <div class="mobile-cards" id="keysCards"></div>
+    <div class="card" style="padding:10px">
+      <!-- 紧凑聚合视图: 桌面/移动共用, 不再使用多列表格 -->
+      <div id="keysCards"></div>
     </div>
   </div>
 
@@ -412,8 +524,8 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
       <input id="logStatus" placeholder="状态码" style="width:90px">
       <input id="logModel" placeholder="模型关键词" style="width:130px">
       <input id="logKey" placeholder="Key" style="width:110px">
-      <input id="logFrom" type="date" title="开始日期" style="width:140px">
-      <input id="logTo" type="date" title="结束日期" style="width:140px">
+      <input id="logFrom" type="date" class="date-input" title="开始日期" style="width:140px">
+      <input id="logTo" type="date" class="date-input" title="结束日期" style="width:140px">
       <button class="btn sm" id="logFilterBtn" style="white-space:nowrap">查询</button>
     </div>
     <div class="row mb" style="justify-content:space-between;align-items:center">
@@ -599,7 +711,7 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
       </div>
       <p class="muted mt">并携带 <code>Authorization: Bearer &lt;网关Key&gt;</code>(若设置了网关 Key)。支持强制指定提供商/Key:请求头 <code>x-relay-provider: openai</code>、<code>x-relay-key: key名称</code>。</p>
       <div class="muted" style="font-size:11px;margin:10px 0 6px">常用客户端接入模板(点击复制):</div>
-      <div id="clientTemplates" class="addr-list"></div>
+      <div id="clientTemplates" class="client-tpl-list"></div>
       <div class="row mt" style="gap:8px;flex-wrap:wrap">
         <button class="btn" onclick="copyClientTemplate('chatbox')">复制 ChatBox 配置</button>
         <button class="btn" onclick="copyClientTemplate('nextchat')">复制 NextChat 配置</button>
@@ -746,6 +858,10 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
         <span class="si-name">深色<div class="si-desc">固定使用深色主题</div></span>
         <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
       </button>
+      <button type="button" class="sheet-item" data-theme-opt="glass" onclick="pickTheme('glass')">
+        <span class="si-name">液态玻璃<div class="si-desc">仿 iOS 毛玻璃质感, 半透明面板 + 彩色光晕背景</div></span>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -845,8 +961,8 @@ code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:12px}
 const $ = id => document.getElementById(id);
 
 // ---------- 主题(自动/浅/深) ----------
-const THEMES=['auto','light','dark'];
-const THEME_LABEL={auto:'自动',light:'浅色',dark:'深色'};
+const THEMES=['auto','light','dark','glass'];
+const THEME_LABEL={auto:'自动',light:'浅色',dark:'深色',glass:'液态玻璃'};
 let THEME=localStorage.getItem('ig_theme')||'auto';
 function applyTheme(){
   const root=document.documentElement;
@@ -856,8 +972,10 @@ function applyTheme(){
   }else{
     root.setAttribute('data-theme',THEME);
   }
-  const light = THEME==='light' || (THEME==='auto' && matchMedia('(prefers-color-scheme: light)').matches);
-  if(meta) meta.setAttribute('content', light?'#f4f6fb':'#0b0f1a');
+  const light = THEME==='light' || THEME==='glass'
+    || (THEME==='auto' && matchMedia('(prefers-color-scheme: light)').matches);
+  const metaColor = THEME==='glass' ? '#dbe6ff' : (light?'#f4f6fb':'#0b0f1a');
+  if(meta) meta.setAttribute('content', metaColor);
   localStorage.setItem('ig_theme',THEME);
 }
 function renderThemeBtn(){
@@ -946,7 +1064,10 @@ function fallbackCopy(txt,done){
 }
 window.copyText=copyText;
 function renderAddrs(){
-  const boxes=document.querySelectorAll('.addr-list');
+  // 只填充真正的地址容器(gwAddrsMini: 仪表盘, gwAddrs: 设置页地址);
+  // 不要用 querySelectorAll('.addr-list')——clientTemplates 虽也带该 class, 但它是
+  // 客户端模板容器, 不应被填成地址列表, 否则"使用方式"里的地址会重复显示两遍。
+  const boxes=[$('gwAddrsMini'), $('gwAddrs')].filter(Boolean);
   if(!boxes.length) return;
   // 构造地址列表(URL 去重)
   const list=[], seen=new Set();
@@ -1105,7 +1226,7 @@ $('refreshBtn').onclick=async ()=>{
   try{
     await Promise.allSettled([
       loadStatus(), loadKeys(), loadModels(), loadLogs(),
-      loadTrend(TREND_DAYS), probeHealth(), loadRoutes(), loadGwKeys(),
+      loadTrend(TREND_PERIOD), probeHealth(), loadRoutes(), loadGwKeys(),
     ]);
     toast('已刷新');
   }catch(e){ toast('刷新失败: '+e.message); }
@@ -1155,66 +1276,130 @@ async function loadAlerts(){
 }
 
 // ---------- Key ----------
-function keyRowHtml(k){
-  const st=STATUS_TAG[k.status]||['gray',k.status];
-  const qr=Math.min(100,k.quota_ratio*100);
-  return `<tr>
-    <td><b>${esc(k.name)}</b><div class="muted" style="font-size:11px">${esc(k.id)}</div></td>
-    <td><span class="tag">${esc(k.provider)}</span></td>
-    <td><code>${esc(k.masked_key)}</code></td>
-    <td><span class="tag ${st[0]}">${st[1]}</span></td>
-    <td>${k.priority}</td><td>${k.weight}</td>
-    <td>${fmtNum(k.used_today)} <div class="progress" style="margin-top:4px"><i style="width:${qr}%"></i></div></td>
-    <td>${k.daily_quota?fmtNum(k.quota_remaining)+' / '+fmtNum(k.daily_quota):'不限'}</td>
-    <td>${(k.error_rate*100).toFixed(1)}%</td>
-    <td><div class="ops">
-      <button class="btn sm" onclick="testKey('${k.id}')">测试</button>
-      <button class="btn sm" onclick="editKey('${k.id}')">编辑</button>
-      <button class="btn sm danger" onclick="toggleKeyStatus('${k.id}','${k.status==='active'?'inactive':'active'}')">${k.status==='active'?'停用':'启用'}</button>
-      <button class="btn sm danger" onclick="delKey('${k.id}')">删除</button>
-    </div></td></tr>`;
+// ===== Key 管理: 紧凑聚合视图 =====
+// 每个上游地址(提供商 + base_url)为一个分组卡; 组内每个 Key 一行,
+// 显示: 状态点 + 名称 + 关键指标(用量/错误率) + 启停开关 + 更多菜单(测试/编辑/删除)。
+// 表格视图与卡片视图共用同一套紧凑 DOM(桌面/移动一致, 大幅精简)。
+function keyGroupKey(k){
+  return (k.provider||'')+' @ '+((k.base_url||'').trim()||'(默认地址)');
 }
-function keyCardHtml(k){
-  const st=STATUS_TAG[k.status]||['gray',k.status];
-  const qr=Math.min(100,k.quota_ratio*100);
-  return `<div class="mc-card">
-    <div class="mc-head">
-      <div><b>${esc(k.name)}</b><div class="muted" style="font-size:11px">${esc(k.id)}</div></div>
-      <div class="spacer"></div>
-      <span class="tag ${st[0]}">${st[1]}</span>
+function groupKeys(keys){
+  const map=new Map();
+  keys.forEach(k=>{
+    const gk=keyGroupKey(k);
+    if(!map.has(gk)) map.set(gk,{provider:k.provider,base_url:(k.base_url||'').trim(),list:[]});
+    map.get(gk).list.push(k);
+  });
+  return [...map.values()];
+}
+function keyItemHtml(k){
+  const on=k.status==='active';
+  const dot=k.status||'inactive';
+  const err=(k.error_rate*100).toFixed(0);
+  const quota=k.daily_quota?fmtNum(k.used_today)+'/'+fmtNum(k.daily_quota):fmtNum(k.used_today);
+  const sub=[
+    '用量 '+quota,
+    (k.error_rate>0?'错误 '+err+'%':''),
+    (k.priority!=null?'P'+k.priority:''),
+  ].filter(Boolean).join(' · ');
+  return `<div class="kitem">
+    <span class="kdot ${dot}" title="${esc((STATUS_TAG[k.status]||['',''])[1]||k.status)}"></span>
+    <div class="kmain">
+      <div class="kname">${esc(k.name)}</div>
+      <div class="ksub">${esc(sub)}</div>
     </div>
-    <div class="mc-grid">
-      <div><span class="mc-label">提供商</span><span class="tag">${esc(k.provider)}</span></div>
-      <div><span class="mc-label">Key</span><code>${esc(k.masked_key)}</code></div>
-      <div><span class="mc-label">优先级 / 权重</span>${k.priority} / ${k.weight}</div>
-      <div><span class="mc-label">错误率</span>${(k.error_rate*100).toFixed(1)}%</div>
-    </div>
-    <div class="mc-quota"><span class="mc-label">今日用量</span>
-      <div style="display:flex;justify-content:space-between;font-size:12px">
-        <span>${fmtNum(k.used_today)}</span>
-        <span class="muted">${k.daily_quota?fmtNum(k.quota_remaining)+' / '+fmtNum(k.daily_quota):'不限'}</span>
+    <button class="switch ksw ${on?'on':''}" onclick="toggleKeyStatus('${k.id}','${on?'inactive':'active'}')" title="${on?'点击停用':'点击启用'}"></button>
+    <div class="kmore">
+      <button class="btn kmenu-btn" onclick="toggleKeyMenu(event,'${k.id}')" title="更多">⋯</button>
+      <div class="kmenu" id="kmenu-${k.id}">
+        <button onclick="closeKeyMenus();testKey('${k.id}')">测试</button>
+        <button onclick="closeKeyMenus();editKey('${k.id}')">编辑</button>
+        <button class="danger" onclick="closeKeyMenus();delKey('${k.id}')">删除</button>
       </div>
-      <div class="progress" style="width:100%;margin-top:4px"><i style="width:${qr}%"></i></div>
-    </div>
-    <div class="mc-ops">
-      <button class="btn sm" onclick="testKey('${k.id}')">测试</button>
-      <button class="btn sm" onclick="editKey('${k.id}')">编辑</button>
-      <button class="btn sm danger" onclick="toggleKeyStatus('${k.id}','${k.status==='active'?'inactive':'active'}')">${k.status==='active'?'停用':'启用'}</button>
-      <button class="btn sm danger" onclick="delKey('${k.id}')">删除</button>
     </div>
   </div>`;
 }
+function keyGroupHtml(g){
+  const active=g.list.filter(k=>k.status==='active').length;
+  const url=g.base_url||'(提供商默认地址)';
+  return `<div class="kg">
+    <div class="kg-hd">
+      <span class="tag">${esc(g.provider)}</span>
+      <code class="u" title="${esc(url)}">${esc(url)}</code>
+      <span class="n">${g.list.length}个·活${active}</span>
+      <span class="act">
+        <button class="btn kg-add" onclick="addKeyForGroup('${esc(g.provider)}','${esc(g.base_url)}')" title="向该地址添加 Key">+</button>
+      </span>
+    </div>
+    ${g.list.map(keyItemHtml).join('')}
+  </div>`;
+}
+// 记录每个菜单的原始父节点, 用于关闭时挂回原处
+const _kmenuOrig=new WeakMap();
+function toggleKeyMenu(e,id){
+  e.stopPropagation();
+  const el=$('kmenu-'+id); if(!el) return;
+  const open=el.classList.contains('open');
+  closeKeyMenus();
+  if(open) return;
+  // 关键: 玻璃主题下祖先带 backdrop-filter, 会为 fixed 定位子元素创建包含块,
+  // 导致菜单被 .kg 的 overflow:hidden 裁剪而显示不出来。
+  // 因此打开时把菜单挂到 document.body(脱离任何 filter 祖先), 关闭时挂回原处。
+  if(el.parentElement && el.parentElement!==document.body){
+    _kmenuOrig.set(el, el.parentElement);
+    document.body.appendChild(el);
+  }
+  el.classList.add('open');
+  const btn=(e.currentTarget||e.target).closest('.kmenu-btn')||(e.currentTarget||e.target);
+  const r=btn.getBoundingClientRect();
+  // 先显示以获取真实尺寸, 再定位
+  const mw=el.offsetWidth||120, mh=el.offsetHeight||120;
+  const pad=8;
+  let left=r.right-mw;                 // 右对齐按钮
+  if(left<pad) left=pad;
+  if(left+mw>window.innerWidth-pad) left=window.innerWidth-pad-mw;
+  let top=r.bottom+4;                   // 默认在按钮下方
+  if(top+mh>window.innerHeight-pad) top=r.top-mh-4;  // 下方放不下则翻到上方
+  if(top<pad) top=pad;
+  el.style.left=left+'px';
+  el.style.top=top+'px';
+}
+function closeKeyMenus(){
+  document.querySelectorAll('.kmenu.open').forEach(m=>{
+    m.classList.remove('open');
+    const orig=_kmenuOrig.get(m);
+    if(orig && m.parentElement!==orig){
+      orig.appendChild(m);            // 挂回原父节点, 保持 DOM 结构整洁
+    }
+  });
+}
+window.toggleKeyMenu=toggleKeyMenu; window.closeKeyMenus=closeKeyMenus;
+document.addEventListener('click', closeKeyMenus);
+// 滚动/缩放时关闭菜单, 避免 fixed 菜单与按钮错位
+window.addEventListener('scroll', closeKeyMenus, true);
+window.addEventListener('resize', closeKeyMenus);
 async function loadKeys(){
   try{
     const keys=await api('/api/keys');
     KEYS=keys;
-    $('keysBody').innerHTML=keys.map(keyRowHtml).join('')
-      || '<tr><td colspan="10" class="empty">暂无 Key,点击右上角添加</td></tr>';
-    $('keysCards').innerHTML=keys.map(keyCardHtml).join('')
+    const groups=groupKeys(keys);
+    const html=groups.map(keyGroupHtml).join('')
       || '<div class="empty">暂无 Key,点击右上角添加</div>';
-    fadeIn($('keysBody')); fadeIn($('keysCards'));
+    $('keysCards').innerHTML=html;
+    fadeIn($('keysCards'));
   }catch(e){ toast(e.message); }
 }
+// 向指定地址快速添加 Key: 打开添加弹窗并预填提供商 / base_url
+function addKeyForGroup(provider, base_url){
+  $('keyId').value=''; $('keyModalTitle').textContent='添加 Key';
+  ['keyApi','keyName','keyBase','keyNote'].forEach(i=>$(i).value='');
+  KEY_PROVIDER=provider||(PROVIDERS.length?PROVIDERS[0].id:''); renderKeyProviderBtn();
+  $('keyPriority').value=100; $('keyWeight').value=1; $('keyRpm').value=60; $('keyQuota').value=1000000;
+  KEY_RPM_UNLIM=false; KEY_QUOTA_UNLIM=false; syncKeyUnlimitedUI();
+  $('keyBase').value=base_url||'';
+  $('keyMsg').textContent=''; resetKeySecret(); $('keyModal').classList.add('open');
+}
+window.addKeyForGroup=addKeyForGroup;
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 let KEY_PROVIDER='';
@@ -1387,6 +1572,26 @@ function groupHeadHtml(prov,list){
     </span>
   </div>`;
 }
+// 能力徽标: 用单字母图标 + tooltip, 避免长文字占空间
+const CAP_META={
+  chat:{c:'c-chat',s:'C',t:'对话'},
+  vision:{c:'c-vision',s:'V',t:'视觉/多模态'},
+  reasoning:{c:'c-reason',s:'R',t:'推理'},
+  tools:{c:'c-tools',s:'T',t:'函数调用/工具'},
+  embedding:{c:'c-embedding',s:'E',t:'向量嵌入'},
+  image:{c:'c-image',s:'I',t:'图像生成'},
+  audio:{c:'c-audio',s:'A',t:'语音识别'},
+  tts:{c:'c-tts',s:'S',t:'语音合成'},
+  other:{c:'c-other',s:'·',t:'其他'},
+};
+function capsHtml(m){
+  const caps=(m.capabilities||[]);
+  if(!caps.length) return '<span class="muted" style="font-size:11px">-</span>';
+  return '<span class="caps">'+caps.map(c=>{
+    const meta=CAP_META[c]||{c:'c-other',s:(c[0]||'?').toUpperCase(),t:c};
+    return `<span class="cap ${meta.c}" title="${esc(meta.t)}">${meta.s}</span>`;
+  }).join('')+'</span>';
+}
 function modelNameHtml(m){
   const name = m.name||m.id;
   const sub = (m.name && m.name!==m.id) ? m.id : '';
@@ -1401,7 +1606,7 @@ function modelRowHtml(m){
   const on = m.enabled!==false;
   return `<tr>
   <td>${modelNameHtml(m)}</td>
-  <td>${(m.capabilities||[]).map(c=>`<span class="tag green">${c}</span>`).join(' ')||'-'}</td>
+  <td>${capsHtml(m)}</td>
   <td style="white-space:nowrap">
     <button class="btn sm" onclick="routeModel('${esc(m.id)}')" title="设置该模型使用哪些 Key">路由</button>
     <button class="switch ${on?'on':''}" onclick="toggleModel('${esc(m.id)}',${!on})" title="${on?'点击关闭':'点击开启'}"></button>
@@ -1418,7 +1623,7 @@ function modelCardHtml(m){
   const on = m.enabled!==false;
   return `<div class="mc-card model-card">
     <div style="flex:1;min-width:0;overflow:hidden">${modelNameHtml(m)}</div>
-    ${(m.capabilities||[]).map(c=>`<span class="tag green">${c}</span>`).join(' ')}
+    ${capsHtml(m)}
     <button class="btn sm" onclick="routeModel('${esc(m.id)}')">路由</button>
     <button class="switch ${on?'on':''}" onclick="toggleModel('${esc(m.id)}',${!on})" title="${on?'点击关闭':'点击开启'}"></button>
   </div>`;
@@ -1622,6 +1827,16 @@ $('logPrev').onclick=()=>{ if(LOG_PAGE>0){ LOG_PAGE--; loadLogs(); } };
 $('logNext').onclick=()=>{ LOG_PAGE++; loadLogs(); };
 $('logFrom').onchange=()=>{ LOG_PAGE=0; loadLogs(); };
 $('logTo').onchange=()=>{ LOG_PAGE=0; loadLogs(); };
+// 日期输入: 有值时显示文本(加 has-value), 空值隐藏浏览器占位(减 UI 臃肿)
+function syncDateClass(){
+  ['logFrom','logTo'].forEach(id=>{
+    const el=$(id);
+    if(el) el.classList.toggle('has-value', !!el.value);
+  });
+}
+$('logFrom').oninput=syncDateClass; $('logTo').oninput=syncDateClass;
+$('logFrom').onblur=syncDateClass;  $('logTo').onblur=syncDateClass;
+syncDateClass();
 
 // ---------- 设置 ----------
 const LB_STRATEGIES=[
@@ -1723,16 +1938,16 @@ async function clearCache(){
 window.clearCache=clearCache;
 
 // ---------- 用量趋势曲线图 ----------
-let TREND_DAYS=7;
-async function loadTrend(days){
-  TREND_DAYS=days||TREND_DAYS;
+let TREND_PERIOD='7d';
+async function loadTrend(period){
+  TREND_PERIOD=period||TREND_PERIOD;
   // 按钮高亮同步
   document.querySelectorAll('.trend-btn').forEach(b=>{
-    b.classList.toggle('primary', +b.dataset.days===TREND_DAYS);
+    b.classList.toggle('primary', b.dataset.period===TREND_PERIOD);
   });
   try{
-    const d=await api('/api/trend?days='+TREND_DAYS);
-    $('trendChart').innerHTML=renderTrendSvg(d.series||[]);
+    const d=await api('/api/trend?period='+encodeURIComponent(TREND_PERIOD));
+    $('trendChart').innerHTML=renderTrendSvg(d.series||[], TREND_PERIOD);
   }catch(e){ $('trendChart').innerHTML='<div class="empty">加载失败: '+esc(e.message)+'</div>'; }
 }
 // Catmull-Rom 转三次贝塞尔: 平滑曲线路径
@@ -1747,38 +1962,67 @@ function smoothPath(pts){
   }
   return d;
 }
-function renderTrendSvg(series){
+function renderTrendSvg(series, period){
   if(!series.length) return '<div class="empty">暂无数据</div>';
   const W=720, H=210, PAD=30;
-  const maxReq=Math.max(1,...series.map(s=>s.requests));
-  const maxTok=Math.max(1,...series.map(s=>s.tokens));
   const n=series.length;
-  const x=i=>PAD+(W-PAD*2)*(n===1?0.5:i/(n-1));
-  const yReq=v=>H-PAD-(H-PAD*2)*(v/maxReq);
-  const yTok=v=>H-PAD-(H-PAD*2)*(v/maxTok);
-  const reqPts=series.map((s,i)=>[x(i),yReq(s.requests)]);
-  const tokPts=series.map((s,i)=>[x(i),yTok(s.tokens)]);
+  const isHour = period==='24h';
+  // 单次遍历求极值与汇总, 避免多次 map/reduce(性能优化)
+  let maxReq=1, maxTok=1, totReq=0, totTok=0, totErr=0, totCost=0;
+  for(let i=0;i<n;i++){
+    const s0=series[i];
+    if(s0.requests>maxReq) maxReq=s0.requests;
+    if(s0.tokens>maxTok) maxTok=s0.tokens;
+    totReq+=s0.requests; totTok+=s0.tokens;
+    totErr+=(s0.errors||0); totCost+=(+s0.cost_usd||0);
+  }
+  const innerW=W-PAD*2, innerH=H-PAD*2;
+  const x=i=>PAD+innerW*(n===1?0.5:i/(n-1));
+  const yReq=v=>H-PAD-innerH*(v/maxReq);
+  const yTok=v=>H-PAD-innerH*(v/maxTok);
+  // 单次构建点集与路径片段
+  const reqPts=new Array(n), tokPts=new Array(n);
+  for(let i=0;i<n;i++){
+    reqPts[i]=[x(i),yReq(series[i].requests)];
+    tokPts[i]=[x(i),yTok(series[i].tokens)];
+  }
   const reqPath=smoothPath(reqPts);
   const tokPath=smoothPath(tokPts);
-  // 渐变填充(请求数面积)
-  const areaReq='M'+x(0).toFixed(1)+','+(H-PAD)+' L'+reqPts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')+' L'+x(n-1).toFixed(1)+','+(H-PAD)+' Z';
-  // 横轴刻度线(每格)
-  const grid=(()=>{ let g=''; for(let i=0;i<=4;i++){ const y=PAD+i*(H-PAD*2)/4; g+=`<line x1="${PAD}" y1="${y.toFixed(1)}" x2="${W-PAD}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.5" opacity="0.5"/>`; } return g; })();
-  const labels=series.map((s,i)=>{
-    const show=n>30?(i%Math.ceil(n/8)===0):(n>14?(i%2===0):true);
-    return show?`<text x="${x(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--muted)">${s.label}</text>`:'';
-  }).join('');
-  const reqDots=series.map((s,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${yReq(s.requests).toFixed(1)}" r="2.5" fill="var(--accent)" stroke="#0b0f1a" stroke-width="1"><title>${s.label} 请求 ${s.requests} · Token ${fmtNum(s.tokens)} · 费用 $${s.cost_usd}</title></circle>`).join('');
-  // 汇总: 区间总请求 / 总 token(万) / 日均
-  const totReq=series.reduce((a,s)=>a+s.requests,0);
-  const totTok=series.reduce((a,s)=>a+s.tokens,0);
-  const totCost=series.reduce((a,s)=>a+(+s.cost_usd||0),0);
+  const areaReq='M'+x(0).toFixed(1)+','+(H-PAD)+' L'+
+    reqPts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')+
+    ' L'+x(n-1).toFixed(1)+','+(H-PAD)+' Z';
+  // 网格线
+  let grid='';
+  for(let i=0;i<=4;i++){ const y=(PAD+i*innerH/4).toFixed(1);
+    grid+=`<line x1="${PAD}" y1="${y}" x2="${W-PAD}" y2="${y}" stroke="var(--border)" stroke-width="0.5" opacity="0.5"/>`; }
+  // 横轴标签: 按点数自适应抽稀(24h 每 3~4 小时, 日视图每 1~N 天)
+  const labelStep = n>24 ? Math.ceil(n/8) : (n>12 ? Math.ceil(n/6) : 1);
+  let labels='';
+  for(let i=0;i<n;i++){
+    if(i%labelStep!==0 && i!==n-1) continue;
+    labels+=`<text x="${x(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--muted)">${series[i].label}</text>`;
+  }
+  // 数据点: 点多时抽稀渲染(性能优化), 最多约 30 个圆点
+  const dotStep = n>30 ? Math.ceil(n/30) : 1;
+  let reqDots='';
+  for(let i=0;i<n;i++){
+    if(dotStep>1 && i%dotStep!==0 && i!==n-1) continue;
+    const s0=series[i];
+    const tip = isHour
+      ? `${s0.label} 请求 ${s0.requests} · Token ${fmtNum(s0.tokens)}`
+      : `${s0.label} 请求 ${s0.requests} · Token ${fmtNum(s0.tokens)} · 费用 $${s0.cost_usd}`;
+    reqDots+=`<circle cx="${reqPts[i][0].toFixed(1)}" cy="${reqPts[i][1].toFixed(1)}" r="2.5" fill="var(--accent)" stroke="#0b0f1a" stroke-width="1"><title>${tip}</title></circle>`;
+  }
   const avg=Math.round(totReq/Math.max(1,n));
+  const avgLabel = isHour ? '时均' : '日均';
+  const costSpan = isHour ? '' :
+    `<span>费用 <b style="color:var(--text)">$${totCost.toFixed(4)}</b></span>`;
   const sumRow=`<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:6px">
-    <span>区间请求 <b style="color:var(--text)">${fmtNum(totReq)}</b></span>
+    <span>${isHour?'24h':'区间'}请求 <b style="color:var(--text)">${fmtNum(totReq)}</b></span>
     <span>Token <b style="color:var(--text)">${(totTok/10000).toFixed(2)}万</b></span>
-    <span>费用 <b style="color:var(--text)">$${totCost.toFixed(4)}</b></span>
-    <span>日均 <b style="color:var(--text)">${fmtNum(avg)}</b></span>
+    ${costSpan}
+    <span>错误 <b style="color:var(--text)">${fmtNum(totErr)}</b></span>
+    <span>${avgLabel} <b style="color:var(--text)">${fmtNum(avg)}</b></span>
   </div>`;
   return `<div>
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" preserveAspectRatio="none">
@@ -2135,7 +2379,7 @@ async function init(){
     await loadStatus();
     await loadProviders();
     loadRoutes(); loadKeys(); loadModels(); loadLogs(); loadSettings(); loadPricing();
-    loadTrend(7);
+    loadTrend(TREND_PERIOD);
     setInterval(()=>{ if(document.hidden) return; loadStatus(); }, 15000);
   }catch(e){ if(e.message==='unauthorized') showLogin(); }
 }

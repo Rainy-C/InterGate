@@ -1,7 +1,7 @@
 """全局常量(对齐 RelayGo / InterGate Android 版)"""
 
 APP_NAME = "InterGate"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 APP_SLOGAN = "AI 网关,随时就绪"
 
 # 网关监听
@@ -20,6 +20,7 @@ STATS_PATH = "/relay/stats"
 VERSION_PATH = "/relay/version"
 REPORT_PATH = "/relay/report"
 CACHE_STATS_PATH = "/relay/cache"
+METRICS_PATH = "/relay/metrics"
 MODELS_PATH = "/v1/models"
 
 # 客户端强制指定提供商 / key 的请求头

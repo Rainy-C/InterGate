@@ -468,6 +468,30 @@ class Database:
         """近 N 天按模型聚合成功请求 token 用量(便捷封装)。"""
         return self.token_usage_since(int(time.time() * 1000) - days * 86400 * 1000)
 
+    def hourly_trend(self, hours: int = 24) -> List[Dict[str, Any]]:
+        """近 N 小时按小时聚合 request_logs, 用于 24 小时用量趋势。
+
+        桶按绝对小时(ts/3600000)对齐, 返回 bucket(小时 epoch)、请求/错误/token。
+        由调用方(webapp)补齐缺失小时并生成本地时间标签。
+        """
+        since = int(time.time() * 1000) - hours * 3600 * 1000
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT CAST(ts/3600000 AS INTEGER) AS bucket,
+                       COUNT(*) AS requests,
+                       COALESCE(SUM(CASE WHEN status>=400 THEN 1 ELSE 0 END),0) AS errors,
+                       COALESCE(SUM(prompt_tokens),0) AS prompt_tokens,
+                       COALESCE(SUM(completion_tokens),0) AS completion_tokens
+                FROM request_logs
+                WHERE ts >= ?
+                GROUP BY bucket
+                ORDER BY bucket
+                """,
+                (since,),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
     def cache_stats_today(self, ttl: float = 3.0) -> Dict[str, Any]:
         """今日缓存命中统计(带短 TTL 缓存)。
 

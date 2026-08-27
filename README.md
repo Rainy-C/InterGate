@@ -1,4 +1,4 @@
-# InterGate · AI API 智能中转网关(Python 版)
++# InterGate · AI API 智能中转网关(Python 版)
 
 > **开发者**: 恣桐
 > 
@@ -25,7 +25,7 @@
 
 ```bash
 # 1. 进入项目
-cd ~/工作目录/InterGate
+cd ~/InterGate
 
 # 2. 安装依赖(Python 3.10+)
 pip install -r requirements.txt
@@ -66,6 +66,8 @@ pip install -r requirements.txt
 | `x-relay-key: 名称或ID` | 强制指定某个 Key |
 | `x-relay-cache` | 缓存命中时网关返回该头 |
 
+管理接口(需携带网关 Key):`/relay/stats` 运行统计、`/relay/report` 额度报表、`/relay/version` 版本、`/relay/cache` 缓存统计、`/relay/metrics` Prometheus 指标。
+
 ## 目录结构
 
 ```
@@ -90,7 +92,7 @@ InterGate/
 - API Key 使用 AES-256-GCM 加密存储,主密钥在 `data/.master_key`(权限 0600)。
 - 网关默认不鉴权(局域网内均可调用);建议在「设置」中配置主网关 Key 后再暴露到局域网。
   配置后,调用网关需携带 `Authorization: Bearer <网关 Key>`,并支持按权限拆分的附加网关密钥。
-- 网关管理接口(`/relay/stats`、`/relay/report`、`/relay/version`、`/relay/cache`)同样需要网关 Key
+- 网关管理接口(`/relay/stats`、`/relay/report`、`/relay/version`、`/relay/cache`、`/relay/metrics`)同样需要网关 Key
   鉴权;健康检查 `/health`、`/healthz`、`/ping` 保持公开。
 - Web 控制台:未设置管理台密码时仅本机(`127.0.0.1`)可访问;设置密码后局域网可访问。
   登录 token 24 小时有效,登录接口有失败限速(60 秒内 5 次失败即临时锁定)。
@@ -106,7 +108,45 @@ python3 tests/gateway_smoke.py  # 网关+Web 集成冒烟(需先安装依赖)
 
 ## 版本历史
 
-### v1.1.0 (2026-08-25)
+### v1.1.1 (2026-08-27)
+
+> 面向个人使用的稳定性、可观测性与 UI 优化:清理死代码、补齐运行时缺失的
+> 后台任务、增加优雅关闭与 Prometheus 指标,并优化控制台展示。
+
+#### 优化 / 修复
+
+- **删除未使用的死代码**:移除 `services/security.py`(JWT/自签名证书,全项目未引用且依赖未安装)与 `services/connection_pool.py`(asyncpg/aiosqlite,未引用且依赖未安装),消除误导与潜在 import 崩溃。实际鉴权由 Web 控制台的 HMAC token 承担,连接池由 httpx 承担。
+- **日志自动清理生效**:新增后台 `prune_loop` 定时任务(每小时一次),按 `log_retention_days` / `max_log_entries` 裁剪 `request_logs`,修复"配置了保留策略但从未执行、请求日志表无限膨胀"的问题。
+- **优雅关闭**:单进程/多进程/worker 退出时统一冲刷后台批量写队列(`flush_now`)并关闭上游连接池(`aclose`);`run.sh stop` 改为先 `SIGTERM` 等待、超时才 `SIGKILL`,避免 `kill -9` 绕过冲刷导致丢失未落库的日志/统计。
+- **TPM token 估算增强**:`_estimate_tokens` 现覆盖多模态数组(取 text 片段、图片/音频按固定当量计入)与 `prompt`/`input` 字段,AIMD 限流记账更接近真实用量。
+- **批量测试并发化**:「测试全部 Key」由串行改为 `asyncio.gather` 并发,Key 多时大幅提速。
+- **Anthropic 模型可见**:同步时为 anthropic Key 注入内置 Claude 模型清单(Claude 无 `/models` 接口),使 Claude 模型能出现在模型列表与路由中。
+- **模型能力推断增强**:`infer_capabilities` 新增 `vision`(视觉)、`reasoning`(推理)、`tools`(函数调用)标记,并扩展国产模型识别。
+
+#### Web 控制台
+
+- **能力徽标紧凑化**:模型列表的 `chat`/`vision`/`reasoning`/`tools` 等能力标签由长文字改为单字母彩色小图标(悬停显示全称),解决能力过多时占用大量横向空间、UI 拥挤的问题。
+- **用量趋势三档切换**:趋势图改为「24小时 / 7日 / 1月」三档。24 小时按小时聚合(基于请求日志),7 日 / 1 月按日聚合。
+- **趋势曲线渲染性能优化**:单次遍历完成极值与汇总计算,数据点与横轴标签按点数自适应抽稀(最多约 30 个数据点),避免点过多时 DOM 膨胀导致卡顿。
+- **Key 管理按 base_url 聚合**:同一「提供商 + 地址」下的多个 Key 归为一组紧凑展示,支持组内单个 Key 独立启停、组头 `+` 快捷添加同地址 Key。较原多列大表格大幅精简。
+- **设置页「使用方式」地址去重**:修复地址列表因 `clientTemplates` 误带 `addr-list` 类被批量填充、导致地址显示两遍的问题,地址容器与客户端模板容器分离。
+- **日志日期输入精简**:未选择日期时隐藏浏览器默认 `mm/dd/yyyy` 占位文字(聚焦或已选时显示),减少日志筛选栏 UI 臃肿。
+- **仪表盘地址卡片防重叠**:地址链接改为 `flex` 占满 + 超长省略号,复制按钮固定在右侧,不再与地址文字重叠。
+- **编辑 Key 的眼睛按钮修复**:显示/隐藏密钥按钮改为 `top/bottom` 约束定位,严格包裹在输入框内部,不再超出输入框边界。
+- **Key 三点菜单遮挡修复**:更多菜单打开时挂载到 `document.body` 以视口定位(脱离带 `backdrop-filter` 的祖先容器),并做边界避让,玻璃主题下也能正常显示且不越界。
+
+#### 主题
+
+- **新增「液态玻璃」主题**:仿 iOS 毛玻璃质感——半透明面板 + 高斯模糊 + 彩色光晕背景,卡片/弹窗/按钮统一呈现玻璃通透感。设置 → 主题 可选,持久化保存。
+- **底部导航悬浮胶囊**:移动端底部导航由贴底通栏改为悬浮胶囊样式(左右留边距、圆角、毛玻璃 + 投影),并针对深色/浅色/玻璃三套主题分别适配 `--nav-bg` 背景色。
+
+#### 新功能
+
+- **Prometheus 指标端点** `/relay/metrics`:输出标准 Prometheus 文本格式(Key 总数/可用数、今日请求/错误/token、缓存命中、运行时长,以及按 Key 标签的用量),可直接接入 Prometheus + Grafana。需网关 Key 鉴权。
+
+---
+
+### v1.1 (2026-08-25)
 
 > 相对原版的大版本更新：新增多 Worker 并发、模型服务商前缀、自适应用量控制，
 > 并完成大规模性能优化与若干 Bug 修复。
@@ -147,76 +187,24 @@ python3 tests/gateway_smoke.py  # 网关+Web 集成冒烟(需先安装依赖)
 ---
 
 
-### v1.0.0 (初始版本)
+### v1.0 (初始版本)
 
 首次发布，基础功能：多提供商代理、6 种负载均衡策略、失败自动切换、模型同步、响应缓存、多维限流、额度告警、Key 加密管理、Web 控制台。
 
-
-
 ---
-
-## 给开发者
-
-### 代码结构
-
-```
-InterGate/
-├── main.py              # 入口(同时启动网关 + Web, 支持多 Worker)
-├── run.sh               # 一键启动/停止/重启/状态
-├── gateway.py           # 代理网关(路由/鉴权/缓存/限流/失败切换/SSE/用量)
-├── webapp.py            # Web 管理 API(仪表盘/Key/模型/日志/设置)
-├── web/                 # 控制台单页(PWA)
-├── config/              # 常量、定价、用户设置
-├── crypto/              # AES-256-GCM 密钥加密
-├── db/                  # SQLite 存储(keys/settings/logs/stats/alerts)
-├── models/              # 数据模型
-├── providers/           # 提供商识别与上游转发
-├── services/            # key_manager/load_balancer/rate_limiter/cache/quota/sync/...
-└── tests/               # pytest + 冒烟测试
-```
-
-### 运行测试
-
-```bash
-# 安装依赖后, 运行完整测试套件(不依赖网络)
-python3 -m pytest tests/ -q
-
-# 纯逻辑冒烟(不依赖网络)
-python3 tests/unit_smoke.py
-
-# 网关 + Web 集成冒烟
-python3 tests/gateway_smoke.py
-```
-
-### 第三方 AI 应用接入
-
-```text
-base_url = http://<服务器IP>:51234/v1
-api_key  = <网关 Key>   # 设置里配置了网关 Key 时才需要
-
-# 可选: 用带服务商前缀的模型名, 精确路由到指定服务商
-model = 日日新-deepseek-v4-flash   # 等价 deepseek-v4-flash, 但固定走 日日新
-```
-
-### 环境变量
-
-| 变量 | 作用 |
-|---|---|
-| `INTERGATE_DATA_DIR` | 数据目录(默认项目下 `data/`), 主密钥与数据库存于此 |
-| `TERMUX` | 自动识别 Termux 环境(用于端口占用处理等) |
 
 ### LICENSE
 
 本项目采用 **GNU Affero General Public License v3.0 (AGPL-3.0)**。
 
-> **原作者**: 恣桐 (InterGate Contributors)
+> **开发者**: 恣桐 (InterGate Contributors)
 > **版权年份**: 2026
 
 #### 核心版权条款（copyleft · 必须开源改版）
 
 1. **允许使用与修改**：任何人均可自由使用、复制、修改、分发本软件。
-2. **改版必须开源（强 Copyleft）**：**非本项目作者发布、自行修改后的代码，必须以
-   AGPL-3.0（或兼容的开源许可证）公开其改版后的完整源代码**，包括通过网络/服务端
+2. **改版必须开源（强 Copyleft）**：非本项目作者发布、自行修改后的代码，必须以
+   AGPL-3.0（或兼容的开源许可证）公开其改版后的完整源代码，包括通过网络/服务端
    形式对外提供的场景（详见 AGPL-3.0 第 13 条「远程网络交互」条款）。
 3. **保留署名**：修改或分发时必须保留原作者（恣桐）的版权声明与署名，不得删除。
 4. **禁止闭源衍生**：不得将本软件（或其修改版）用于闭源商业分发，违反者将自动

@@ -13,6 +13,18 @@ from providers.upstream import UpstreamClient
 
 log = logging.getLogger("intergate.sync")
 
+# Anthropic 无公开 /models 接口, 内置一份常见 Claude 模型清单,
+# 同步时为 anthropic Key 注入, 使 Claude 模型能出现在模型列表 / 路由中。
+ANTHROPIC_BUILTIN_MODELS = [
+    "claude-opus-4-20250514",
+    "claude-sonnet-4-20250514",
+    "claude-3-7-sonnet-20250219",
+    "claude-3-5-sonnet-20241022",
+    "claude-3-5-haiku-20241022",
+    "claude-3-opus-20240229",
+    "claude-3-haiku-20240307",
+]
+
 
 class ModelSyncer:
     def __init__(self, client: UpstreamClient, db=None):
@@ -79,7 +91,26 @@ class ModelSyncer:
                 return
             try:
                 if k.provider == "anthropic":
-                    return  # anthropic 无 /models 接口,使用内置列表
+                    # 无 /models 接口: 注入内置 Claude 清单
+                    sn = k.name or k.provider
+                    for mid in ANTHROPIC_BUILTIN_MODELS:
+                        mkey = (mid, sn, base)
+                        if mkey in merged:
+                            if k.id not in merged[mkey]["source_keys"]:
+                                merged[mkey]["source_keys"].append(k.id)
+                            if sn not in merged[mkey]["sources"]:
+                                merged[mkey]["sources"].append(sn)
+                            continue
+                        merged[mkey] = {
+                            "id": mid, "name": mid, "provider": "anthropic",
+                            "source": sn, "base_url": base,
+                            "source_key": k.id, "source_keys": [k.id],
+                            "sources": [sn], "owned_by": "anthropic",
+                            "created": None,
+                            "capabilities": infer_capabilities(mid),
+                            "enabled": self._states.get(mid, True),
+                        }
+                    return
                 url = base + "/models"
                 headers = {"Authorization": f"Bearer {plain}"}
                 if k.provider == "google":
@@ -253,7 +284,22 @@ def infer_capabilities(model_id: str) -> List[str]:
         caps.append("audio")
     if any(x in m for x in ("tts", "speech")):
         caps.append("tts")
-    if any(x in m for x in ("gpt", "o1", "o3", "o4", "claude", "gemini",
-                            "llama", "qwen", "deepseek", "mistral", "glm", "kimi")):
+    is_chat = any(x in m for x in ("gpt", "o1", "o3", "o4", "claude", "gemini",
+                                   "llama", "qwen", "deepseek", "mistral", "glm",
+                                   "kimi", "grok", "doubao", "hunyuan", "ernie",
+                                   "spark", "step", "yi", "baichuan", "minimax"))
+    if is_chat:
         caps.append("chat")
+    # 视觉(多模态): 常见含 vision / -v / vl / 4o / gemini 等
+    if any(x in m for x in ("vision", "-vl", "vl-", "4o", "gemini", "claude-3",
+                            "claude-opus-4", "claude-sonnet-4", "qwen-vl",
+                            "gpt-5", "gpt-4.1", "o3", "o4")):
+        caps.append("vision")
+    # 推理模型
+    if any(x in m for x in ("o1", "o3", "o4", "r1", "reasoner", "reasoning",
+                            "thinking", "qwq")):
+        caps.append("reasoning")
+    # 函数调用 / 工具(主流对话模型基本都支持, 排除纯推理/嵌入)
+    if is_chat and "embedding" not in caps:
+        caps.append("tools")
     return caps or ["other"]

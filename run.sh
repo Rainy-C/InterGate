@@ -51,10 +51,24 @@ start() {
   fi
 }
 
+# 优雅停止单个 PID: 先 SIGTERM 让进程冲刷 DB/关闭连接, 超时再 SIGKILL
+term_wait_kill() {
+  local pid="$1"
+  kill -0 "$pid" 2>/dev/null || return 0
+  kill -TERM "$pid" 2>/dev/null
+  local i=0
+  while [ $i -lt 10 ]; do
+    kill -0 "$pid" 2>/dev/null || return 0
+    sleep 1; i=$((i+1))
+  done
+  # 超时兜底
+  kill -9 "$pid" 2>/dev/null
+}
+
 stop() {
-  # 1) PID 文件精确停止
+  # 1) PID 文件精确停止(优雅关闭优先)
   if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-    kill -9 "$(cat "$PID_FILE")" 2>/dev/null
+    term_wait_kill "$(cat "$PID_FILE")"
     rm -f "$PID_FILE"
     echo "已停止(PID 文件)"
   else
@@ -62,8 +76,7 @@ stop() {
     local pids
     pids=$(pgrep -f "python3 .*main[.]py" 2>/dev/null)
     if [ -n "$pids" ]; then
-      # shellcheck disable=SC2086
-      kill -9 $pids 2>/dev/null
+      for pid in $pids; do term_wait_kill "$pid"; done
       rm -f "$PID_FILE"
       echo "已停止(按进程名清理)"
     else

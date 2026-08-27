@@ -252,12 +252,16 @@ class WebApp:
 
         @a.post("/api/keys/test-all")
         async def test_all():
-            results = []
-            for k in self.gateway.key_manager.list_all():
+            # 并发测试全部 Key(串行在 Key 多时很慢), 复用共享上游连接池
+            keys = self.gateway.key_manager.list_all()
+
+            async def _one(k):
                 r = await self.gateway.key_manager.test_key(
                     k.id, client=self.gateway.upstream)
-                results.append({"id": k.id, "name": k.name, **r})
-            return {"results": results}
+                return {"id": k.id, "name": k.name, **r}
+
+            results = await asyncio.gather(*(_one(k) for k in keys))
+            return {"results": list(results)}
 
         @a.get("/api/logs")
         async def logs(limit: int = Query(200, le=1000), offset: int = Query(0, ge=0),
@@ -457,11 +461,40 @@ class WebApp:
             return {"ok": True, "count": len([k for k in clean if k["key"]])}
 
         @a.get("/api/trend")
-        async def usage_trend(days: int = Query(7, ge=1, le=90)):
-            """用量趋势:按日返回请求数/Token/费用/错误数, 缺失日期补 0。"""
+        async def usage_trend(period: str = Query("7d"),
+                              days: int = Query(0, ge=0, le=90)):
+            """用量趋势, 支持三档 period: 24h(按小时) / 7d / 30d(按日)。
+
+            兼容旧参数 days(>0 时按日返回 days 天)。缺失桶补 0。
+            """
             import datetime as _dt
+
+            # 24 小时: 按小时聚合(基于 request_logs)
+            if period == "24h" and days == 0:
+                rows = self.db.hourly_trend(24)
+                by_bucket = {int(r["bucket"]): r for r in rows}
+                now_bucket = int(time.time() // 3600)
+                start_bucket = now_bucket - 23
+                series = []
+                for b in range(start_bucket, now_bucket + 1):
+                    r = by_bucket.get(b)
+                    pt = int(r["prompt_tokens"]) if r else 0
+                    ct = int(r["completion_tokens"]) if r else 0
+                    lt = _dt.datetime.fromtimestamp(b * 3600)
+                    series.append({
+                        "date": lt.strftime("%Y-%m-%d %H:00"),
+                        "label": lt.strftime("%H:00"),
+                        "requests": int(r["requests"]) if r else 0,
+                        "errors": int(r["errors"]) if r else 0,
+                        "tokens": pt + ct,
+                        "cost_usd": 0.0,   # 小时级不做费用估算(费用按日更准)
+                    })
+                return {"period": "24h", "series": series}
+
+            # 按日: 7d / 30d(或兼容旧 days 参数)
+            n_days = days if days > 0 else (30 if period == "30d" else 7)
             end = _dt.date.today()
-            start = end - _dt.timedelta(days=days - 1)
+            start = end - _dt.timedelta(days=n_days - 1)
             rows = self.db.stats_range(start.isoformat(), end.isoformat())
             daily: Dict[str, Dict[str, float]] = {}
             for r in rows:
@@ -491,7 +524,7 @@ class WebApp:
                     "cost_usd": round(agg["cost_usd"], 6),
                 })
                 cur += _dt.timedelta(days=1)
-            return {"days": days, "series": series}
+            return {"period": period, "days": n_days, "series": series}
 
         @a.post("/api/cache/clear")
         async def clear_cache():

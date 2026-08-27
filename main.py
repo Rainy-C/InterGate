@@ -63,6 +63,27 @@ async def auto_sync_loop(gateway: GatewayApp) -> None:
         await asyncio.sleep(interval)
 
 
+async def prune_loop(gateway: GatewayApp) -> None:
+    """定时清理请求日志:按 log_retention_days / max_log_entries 裁剪, 防止表无限增长。
+
+    共享 settings 对象, Web 控制台修改后下一轮生效。首次延迟 60 秒执行,
+    避免启动瞬间与同步任务争抢 DB 锁; 之后每小时清理一次。
+    """
+    await asyncio.sleep(60)
+    while True:
+        s = gateway.settings
+        try:
+            n = gateway.db.prune_logs(
+                retention_days=max(1, s.log_retention_days),
+                max_entries=max(100, s.max_log_entries),
+            )
+            if n:
+                log.info("清理过期请求日志: %d 条", n)
+        except Exception as e:
+            log.warning("清理请求日志失败: %s", e)
+        await asyncio.sleep(3600)
+
+
 def _run_gateway_worker(settings_dict: dict, port: int, host: str) -> None:
     """子进程入口:启动单个网关 worker。
 
@@ -81,7 +102,14 @@ def _run_gateway_worker(settings_dict: dict, port: int, host: str) -> None:
         log_level="warning", access_log=False,
     )
     server = uvicorn.Server(config)
-    asyncio.run(server.serve())
+    try:
+        asyncio.run(server.serve())
+    finally:
+        # worker 退出前冲刷该进程积压的批量写(日志/统计/Key 状态)
+        try:
+            db.flush_now()
+        except Exception:
+            pass
 
 
 async def _run_single_process(settings: UserSettings) -> None:
@@ -112,7 +140,22 @@ async def _run_single_process(settings: UserSettings) -> None:
 
     servers = [uvicorn.Server(gw_cfg), uvicorn.Server(web_cfg)]
     sync_task = asyncio.create_task(auto_sync_loop(gateway))
-    await asyncio.gather(*(s.serve() for s in servers), sync_task, return_exceptions=True)
+    prune_task = asyncio.create_task(prune_loop(gateway))
+    try:
+        await asyncio.gather(*(s.serve() for s in servers),
+                             sync_task, prune_task, return_exceptions=True)
+    finally:
+        # 优雅关闭: 关闭上游连接池 + 冲刷未落库的批量写
+        sync_task.cancel()
+        prune_task.cancel()
+        try:
+            await gateway.upstream.aclose()
+        except Exception as e:
+            log.warning("关闭上游连接池失败: %s", e)
+        try:
+            db.flush_now()
+        except Exception as e:
+            log.warning("冲刷数据库失败: %s", e)
 
 
 async def _run_multi_worker(settings: UserSettings) -> None:
@@ -166,6 +209,7 @@ async def _run_multi_worker(settings: UserSettings) -> None:
                              log_level="warning", access_log=False)
     web_server = uvicorn.Server(web_cfg)
     sync_task = asyncio.create_task(auto_sync_loop(gateway))
+    prune_task = asyncio.create_task(prune_loop(gateway))
 
     # 注册信号处理: 主进程收到终止信号时清理子进程
     def _shutdown_workers(*args):
@@ -178,12 +222,18 @@ async def _run_multi_worker(settings: UserSettings) -> None:
         signal.signal(sig, _shutdown_workers)
 
     try:
-        await asyncio.gather(web_server.serve(), sync_task, return_exceptions=True)
+        await asyncio.gather(web_server.serve(), sync_task, prune_task,
+                             return_exceptions=True)
     finally:
+        prune_task.cancel()
         for p in workers:
             if p.is_alive():
                 p.terminate()
                 p.join(timeout=5)
+        try:
+            db.flush_now()
+        except Exception as e:
+            log.warning("冲刷数据库失败: %s", e)
 
 
 def main() -> None:

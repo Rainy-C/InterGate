@@ -105,6 +105,8 @@ class GatewayApp:
             return self._report()
         if path == C.CACHE_STATS_PATH:
             return JSONResponse(self.cache.stats())
+        if path == C.METRICS_PATH:
+            return self._metrics()
 
         # 提取模型与提供商(权限检查需要 model)
         body = await self._read_body(request)
@@ -541,6 +543,56 @@ class GatewayApp:
     def _stats(self) -> JSONResponse:
         return JSONResponse(self._stats_body())
 
+    def _metrics(self) -> Response:
+        """Prometheus 文本格式指标(供 Grafana/Prometheus 抓取)。
+
+        指标为进程级快照(多 worker 下各进程独立, 抓取时需按实例聚合)。
+        """
+        b = self._stats_body()
+        keys = self.key_manager.list_all()
+        cache = self.cache.stats()
+        lines = []
+
+        def _m(name: str, val, help_text: str, typ: str = "gauge",
+               labels: str = "") -> None:
+            if not any(l.startswith(f"# HELP {name} ") for l in lines):
+                lines.append(f"# HELP {name} {help_text}")
+                lines.append(f"# TYPE {name} {typ}")
+            lbl = f"{{{labels}}}" if labels else ""
+            lines.append(f"{name}{lbl} {val}")
+
+        _m("intergate_keys_total", b["total_keys"], "Key 总数")
+        _m("intergate_keys_active", b["active_keys"], "可用 Key 数")
+        _m("intergate_requests_today", b["requests_today"],
+           "今日请求数", "counter")
+        _m("intergate_errors_today", b["errors_today"],
+           "今日错误数", "counter")
+        _m("intergate_tokens_today", b["used_today"],
+           "今日消耗 token", "counter")
+        _m("intergate_models_count", b["models_count"], "已启用模型数")
+        _m("intergate_cache_hits", cache.get("hits", 0), "缓存命中数", "counter")
+        _m("intergate_cache_misses", cache.get("misses", 0),
+           "缓存未命中数", "counter")
+        _m("intergate_cache_entries", cache.get("entries", 0), "缓存条目数")
+        _m("intergate_uptime_seconds", round(time.time() - self._start_ts, 1),
+           "运行时长(秒)")
+        # 每 Key 用量(带标签)
+        for k in keys:
+            safe = k.id
+            _m("intergate_key_requests_today", k.today_requests,
+               "各 Key 今日请求数", "counter",
+               labels=f'key_id="{safe}",provider="{k.provider}"')
+            _m("intergate_key_errors_today", k.today_errors,
+               "各 Key 今日错误数", "counter",
+               labels=f'key_id="{safe}",provider="{k.provider}"')
+            _m("intergate_key_tokens_today", k.today_used,
+               "各 Key 今日消耗 token", "counter",
+               labels=f'key_id="{safe}",provider="{k.provider}"')
+
+        text = "\n".join(lines) + "\n"
+        return Response(content=text,
+                        media_type="text/plain; version=0.0.4; charset=utf-8")
+
     def _report(self) -> JSONResponse:
         return JSONResponse({
             "summary": self.quota.summary(7),
@@ -612,15 +664,51 @@ def _is_stream_request(j: Optional[Dict[str, Any]]) -> bool:
 
 
 def _estimate_tokens(j: Optional[Dict[str, Any]]) -> int:
+    """粗估请求 token 数(供 AIMD TPM 记账)。
+
+    覆盖: messages[].content 的字符串与多模态数组(取其中 text 片段)、
+    以及顶层 prompt / input 字段(completions / embeddings)。
+    图片/音频等非文本片段按固定当量计入, 避免大图请求被严重低估。
+    """
     if not isinstance(j, dict):
         return 1
-    text = ""
-    for msg in j.get("messages", []) if isinstance(j.get("messages"), list) else []:
-        if isinstance(msg, dict):
-            c = msg.get("content")
-            if isinstance(c, str):
-                text += c
-    return max(1, len(text) // 4)
+    total_chars = 0
+    extra = 0
+
+    def _content_len(c: Any) -> int:
+        nonlocal extra
+        if isinstance(c, str):
+            return len(c)
+        n = 0
+        if isinstance(c, list):
+            for part in c:
+                if isinstance(part, str):
+                    n += len(part)
+                elif isinstance(part, dict):
+                    t = part.get("text")
+                    if isinstance(t, str):
+                        n += len(t)
+                    if part.get("type") in ("image_url", "image",
+                                            "input_audio", "audio"):
+                        extra += 1024  # 非文本片段固定当量
+        return n
+
+    msgs = j.get("messages")
+    if isinstance(msgs, list):
+        for msg in msgs:
+            if isinstance(msg, dict):
+                total_chars += _content_len(msg.get("content"))
+
+    for field in ("prompt", "input"):
+        v = j.get(field)
+        if isinstance(v, str):
+            total_chars += len(v)
+        elif isinstance(v, list):
+            for it in v:
+                if isinstance(it, str):
+                    total_chars += len(it)
+
+    return max(1, total_chars // 4 + extra)
 
 
 def _classify_status(status: int, body: bytes) -> str:
